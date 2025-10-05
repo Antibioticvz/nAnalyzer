@@ -172,26 +172,26 @@ nAnalyzer/
 
 ### TypeScript Types
 
-- [ ] **T075** [P] Create TypeScript interfaces for all entities in frontend/src/types/index.ts
+- [X] **T075** [P] Create TypeScript interfaces for all entities in frontend/src/types/index.ts
 
 ### Services
 
-- [ ] **T076** Create Axios API client configuration in frontend/src/services/api.ts
-- [ ] **T077** Implement chunked upload service in frontend/src/services/uploadService.ts
-- [ ] **T078** Implement WebSocket client service in frontend/src/services/websocketService.ts
+- [X] **T076** Create Axios API client configuration in frontend/src/services/api.ts
+- [X] **T077** Implement chunked upload service in frontend/src/services/uploadService.ts
+- [X] **T078** Implement WebSocket client service in frontend/src/services/websocketService.ts
 
 ### React Hooks
 
-- [ ] **T079** [P] Implement useAudioRecorder hook in frontend/src/hooks/useAudioRecorder.ts
-- [ ] **T080** [P] Implement useChunkedUpload hook in frontend/src/hooks/useChunkedUpload.ts
-- [ ] **T081** [P] Implement useWebSocket hook in frontend/src/hooks/useWebSocket.ts
+- [X] **T079** [P] Implement useAudioRecorder hook in frontend/src/hooks/useAudioRecorder.ts
+- [X] **T080** [P] Implement useChunkedUpload hook in frontend/src/hooks/useChunkedUpload.ts
+- [X] **T081** [P] Implement useWebSocket hook in frontend/src/hooks/useWebSocket.ts
 
 ### Reusable Components
 
-- [ ] **T082** [P] Create Navigation component (MUI AppBar) in frontend/src/components/Navigation.tsx
-- [ ] **T083** [P] Create AudioUploader component (drag-drop, progress) in frontend/src/components/AudioUploader.tsx
-- [ ] **T084** [P] Create VoiceRecorder component (mic recording, waveform) in frontend/src/components/VoiceRecorder.tsx
-- [ ] **T085** [P] Create AudioPlayer component (playback, timeline) in frontend/src/components/AudioPlayer.tsx
+- [X] **T082** [P] Create Navigation component (MUI AppBar) in frontend/src/components/Navigation.tsx
+- [X] **T083** [P] Create AudioUploader component (drag-drop, progress) in frontend/src/components/AudioUploader.tsx
+- [X] **T084** [P] Create VoiceRecorder component (mic recording, waveform) in frontend/src/components/VoiceRecorder.tsx
+- [X] **T085** [P] Create AudioPlayer component (playback, timeline) in frontend/src/components/AudioPlayer.tsx
 - [ ] **T086** [P] Create EmotionChart component (Chart.js line graph) in frontend/src/components/EmotionChart.tsx
 - [ ] **T087** [P] Create TranscriptView component (scrollable, speaker labels) in frontend/src/components/TranscriptView.tsx
 - [ ] **T088** [P] Create AlertPopup component (MUI Snackbar) in frontend/src/components/AlertPopup.tsx

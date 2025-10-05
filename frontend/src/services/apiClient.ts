@@ -1,0 +1,56 @@
+/**
+ * API client for nAnalyzer backend
+ * Centralized HTTP client with error handling
+ */
+import axios, { AxiosInstance, AxiosError } from 'axios';
+import { APIError } from '../types/api';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+class APIClient {
+  private client: AxiosInstance;
+  private userId: string | null = null;
+
+  constructor() {
+    this.client = axios.create({
+      baseURL: API_BASE_URL,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    // Request interceptor to add user ID header
+    this.client.interceptors.request.use((config) => {
+      if (this.userId) {
+        config.headers['X-User-ID'] = this.userId;
+      }
+      return config;
+    });
+
+    // Response interceptor for error handling
+    this.client.interceptors.response.use(
+      (response) => response,
+      (error: AxiosError<APIError>) => {
+        if (error.response?.data) {
+          throw new Error(error.response.data.message || 'API request failed');
+        }
+        throw error;
+      }
+    );
+  }
+
+  setUserId(userId: string) {
+    this.userId = userId;
+  }
+
+  getUserId(): string | null {
+    return this.userId;
+  }
+
+  getClient(): AxiosInstance {
+    return this.client;
+  }
+}
+
+export const apiClient = new APIClient();
+export default apiClient.getClient();
