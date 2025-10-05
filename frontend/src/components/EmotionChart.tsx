@@ -96,7 +96,7 @@ export const EmotionChart: React.FC<EmotionChartProps> = ({
     },
   }
 
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
     return (
       <div
         style={{
