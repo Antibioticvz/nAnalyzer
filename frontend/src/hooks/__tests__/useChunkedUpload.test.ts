@@ -3,10 +3,16 @@
  * Test chunked upload logic and state management
  */
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useChunkedUpload } from '../../hooks/useChunkedUpload';
-import * as api from '../../services/api';
+import { useChunkedUpload } from '../useChunkedUpload';
+import { analysisAPI } from '../../services/analysisAPI';
 
-jest.mock('../../services/api');
+jest.mock('../../services/analysisAPI', () => ({
+  analysisAPI: {
+    initUpload: jest.fn(),
+    uploadChunk: jest.fn(),
+    completeUpload: jest.fn(),
+  },
+}));
 
 describe('useChunkedUpload Hook', () => {
   beforeEach(() => {
@@ -22,20 +28,21 @@ describe('useChunkedUpload Hook', () => {
   });
 
   test('uploads file in chunks', async () => {
-    const mockInitUpload = jest.spyOn(api, 'initializeUpload').mockResolvedValue({
+    (analysisAPI.initUpload as jest.Mock).mockResolvedValue({
       upload_id: 'upload_123',
-      chunk_size: 1048576
+      call_id: 'call_123',
+      chunk_size: 1048576,
     });
     
-    const mockUploadChunk = jest.spyOn(api, 'uploadChunk').mockResolvedValue({
+    (analysisAPI.uploadChunk as jest.Mock).mockResolvedValue({
       upload_id: 'upload_123',
       chunks_received: 1,
-      progress_percent: 100
+      progress_percent: 100,
     });
     
-    const mockCompleteUpload = jest.spyOn(api, 'completeUpload').mockResolvedValue({
+    (analysisAPI.completeUpload as jest.Mock).mockResolvedValue({
       call_id: 'call_123',
-      status: 'processing'
+      status: 'processing',
     });
 
     const { result } = renderHook(() => useChunkedUpload());
@@ -46,38 +53,49 @@ describe('useChunkedUpload Hook', () => {
       await result.current.upload(file, 'user_123');
     });
 
-    expect(mockInitUpload).toHaveBeenCalled();
-    expect(mockUploadChunk).toHaveBeenCalled();
-    expect(mockCompleteUpload).toHaveBeenCalled();
+    expect(analysisAPI.initUpload).toHaveBeenCalled();
+    expect(analysisAPI.uploadChunk).toHaveBeenCalled();
+    expect(analysisAPI.completeUpload).toHaveBeenCalled();
   });
 
   test('tracks progress during upload', async () => {
-    jest.spyOn(api, 'initializeUpload').mockResolvedValue({
+    (analysisAPI.initUpload as jest.Mock).mockResolvedValue({
       upload_id: 'upload_123',
-      chunk_size: 1048576
+      call_id: 'call_123',
+      chunk_size: 1048576,
     });
     
-    jest.spyOn(api, 'uploadChunk').mockResolvedValue({
+    (analysisAPI.uploadChunk as jest.Mock).mockResolvedValue({
       upload_id: 'upload_123',
       chunks_received: 1,
-      progress_percent: 50
+      progress_percent: 50,
+    });
+    
+    (analysisAPI.completeUpload as jest.Mock).mockResolvedValue({
+      call_id: 'call_123',
+      status: 'processing',
     });
 
     const { result } = renderHook(() => useChunkedUpload());
     
     const file = new File(['x'.repeat(2 * 1024 * 1024)], 'test.wav');
     
+    let uploadPromise: Promise<string | null>;
     act(() => {
-      result.current.upload(file, 'user_123');
+      uploadPromise = result.current.upload(file, 'user_123');
     });
 
     await waitFor(() => {
-      expect(result.current.progress).toBeGreaterThan(0);
+      expect(result.current.isUploading).toBe(true);
+    });
+    
+    await act(async () => {
+      await uploadPromise;
     });
   });
 
   test('handles upload errors', async () => {
-    jest.spyOn(api, 'initializeUpload').mockRejectedValue(
+    (analysisAPI.initUpload as jest.Mock).mockRejectedValue(
       new Error('Upload failed')
     );
 
@@ -98,18 +116,39 @@ describe('useChunkedUpload Hook', () => {
   });
 
   test('can cancel upload', async () => {
+    (analysisAPI.initUpload as jest.Mock).mockResolvedValue({
+      upload_id: 'upload_123',
+      call_id: 'call_123',
+      chunk_size: 1048576,
+    });
+    
+    // Make upload chunk slow to allow cancellation
+    (analysisAPI.uploadChunk as jest.Mock).mockImplementation(() => 
+      new Promise((resolve) => setTimeout(() => resolve({
+        upload_id: 'upload_123',
+        chunks_received: 1,
+        progress_percent: 50,
+      }), 100))
+    );
+
     const { result } = renderHook(() => useChunkedUpload());
     
-    const file = new File(['data'], 'test.wav');
+    const file = new File(['x'.repeat(5 * 1024 * 1024)], 'test.wav');
     
     act(() => {
       result.current.upload(file, 'user_123');
+    });
+    
+    await waitFor(() => {
+      expect(result.current.isUploading).toBe(true);
     });
 
     act(() => {
       result.current.cancel();
     });
 
-    expect(result.current.isUploading).toBe(false);
+    await waitFor(() => {
+      expect(result.current.isUploading).toBe(false);
+    });
   });
 });

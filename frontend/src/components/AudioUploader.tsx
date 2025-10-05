@@ -21,19 +21,24 @@ export const AudioUploader: React.FC<AudioUploaderProps> = ({
   
   const { progress, isUploading, error, uploadFile, reset } = useChunkedUpload();
 
+  const [validationError, setValidationError] = useState<string | null>(null);
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    setValidationError(null);
+    
     if (file) {
-      // Validate file type
-      if (!file.type.startsWith('audio/')) {
-        alert('Please select an audio file');
+      // Validate file type (audio formats)
+      const validTypes = ['audio/wav', 'audio/mpeg', 'audio/mp3', 'audio/x-wav'];
+      if (!validTypes.includes(file.type) && !file.name.match(/\.(wav|mp3)$/i)) {
+        setValidationError('Invalid format. Please upload WAV or MP3 files only.');
         return;
       }
 
       // Validate file size (100MB max)
       const maxSize = 100 * 1024 * 1024;
       if (file.size > maxSize) {
-        alert('File too large. Maximum size is 100MB');
+        setValidationError('File too large. Maximum size is 100MB.');
         return;
       }
 
@@ -56,6 +61,7 @@ export const AudioUploader: React.FC<AudioUploaderProps> = ({
 
   const handleCancel = () => {
     setSelectedFile(null);
+    setValidationError(null);
     reset();
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -65,14 +71,19 @@ export const AudioUploader: React.FC<AudioUploaderProps> = ({
   return (
     <div className="audio-uploader">
       <div className="upload-section">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="audio/*"
-          onChange={handleFileSelect}
-          disabled={isUploading}
-          className="file-input"
-        />
+        <label htmlFor="audio-file-input" className="file-input-label">
+          Choose File
+          <input
+            id="audio-file-input"
+            ref={fileInputRef}
+            type="file"
+            accept="audio/*"
+            onChange={handleFileSelect}
+            disabled={isUploading}
+            className="file-input"
+            aria-label="Choose file"
+          />
+        </label>
         
         {selectedFile && (
           <div className="file-info">
@@ -80,12 +91,18 @@ export const AudioUploader: React.FC<AudioUploaderProps> = ({
             <p><strong>Size:</strong> {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
           </div>
         )}
+        
+        {validationError && (
+          <div className="validation-error" role="alert">
+            <p className="error-message">{validationError}</p>
+          </div>
+        )}
       </div>
 
-      {selectedFile && !isUploading && (
+      {selectedFile && !isUploading && !validationError && (
         <div className="upload-actions">
           <button onClick={handleUpload} className="btn btn-primary">
-            Upload & Analyze
+            Start Upload
           </button>
           <button onClick={handleCancel} className="btn btn-secondary">
             Cancel
@@ -95,19 +112,19 @@ export const AudioUploader: React.FC<AudioUploaderProps> = ({
 
       {isUploading && (
         <div className="upload-progress">
-          <div className="progress-bar">
+          <div className="progress-bar" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
             <div
               className="progress-fill"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <p className="progress-text">{progress.toFixed(1)}%</p>
+          <p className="progress-text">{Math.round(progress)}%</p>
           <p className="progress-status">Uploading and processing...</p>
         </div>
       )}
 
       {error && (
-        <div className="upload-error">
+        <div className="upload-error" role="alert">
           <p className="error-message">{error}</p>
           <button onClick={reset} className="btn btn-secondary">
             Try Again

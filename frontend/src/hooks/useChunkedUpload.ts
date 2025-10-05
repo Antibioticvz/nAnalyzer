@@ -2,7 +2,7 @@
  * useChunkedUpload hook
  * Manages chunked file upload with progress tracking
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { analysisAPI } from '../services/analysisAPI';
 
 const CHUNK_SIZE = 1 * 1024 * 1024; // 1MB
@@ -23,9 +23,13 @@ export const useChunkedUpload = () => {
     isUploading: false,
     error: null,
   });
+  
+  const cancelledRef = useRef(false);
 
-  const uploadFile = useCallback(
+  const upload = useCallback(
     async (file: File, userId: string): Promise<string | null> => {
+      cancelledRef.current = false;
+      
       try {
         setUploadState({
           uploadId: null,
@@ -41,6 +45,10 @@ export const useChunkedUpload = () => {
           filename: file.name,
           total_size_bytes: file.size,
         });
+        
+        if (cancelledRef.current) {
+          return null;
+        }
 
         setUploadState((prev) => ({
           ...prev,
@@ -53,6 +61,14 @@ export const useChunkedUpload = () => {
         
         // Upload chunks
         for (let i = 0; i < totalChunks; i++) {
+          if (cancelledRef.current) {
+            setUploadState((prev) => ({
+              ...prev,
+              isUploading: false,
+            }));
+            return null;
+          }
+          
           const start = i * CHUNK_SIZE;
           const end = Math.min(start + CHUNK_SIZE, file.size);
           const chunk = file.slice(start, end);
@@ -83,6 +99,10 @@ export const useChunkedUpload = () => {
             progress: chunkResponse.progress_percent,
           }));
         }
+        
+        if (cancelledRef.current) {
+          return null;
+        }
 
         // Complete upload
         const completeResponse = await analysisAPI.completeUpload(
@@ -109,7 +129,18 @@ export const useChunkedUpload = () => {
     []
   );
 
+  const uploadFile = upload; // Alias for compatibility
+  
+  const cancel = useCallback(() => {
+    cancelledRef.current = true;
+    setUploadState((prev) => ({
+      ...prev,
+      isUploading: false,
+    }));
+  }, []);
+
   const reset = useCallback(() => {
+    cancelledRef.current = false;
     setUploadState({
       uploadId: null,
       callId: null,
@@ -121,7 +152,9 @@ export const useChunkedUpload = () => {
 
   return {
     ...uploadState,
+    upload,
     uploadFile,
+    cancel,
     reset,
   };
 };
