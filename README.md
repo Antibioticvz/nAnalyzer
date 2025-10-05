@@ -213,6 +213,86 @@ WEBSOCKET_PING_INTERVAL=30
 
 ## 🛠️ Development
 
+### Developer Instructions
+
+#### Database Management
+
+**Reset Database (Docker):**
+```bash
+# Reset database inside Docker container (drops all tables and recreates them)
+docker compose exec backend python scripts/init_db.py
+```
+
+**Reset Database (Local):**
+```bash
+# Reset database locally (when running without Docker)
+cd backend
+source venv/bin/activate
+python scripts/init_db.py
+```
+
+**Database Status:**
+```bash
+# Check migration status
+docker compose exec backend alembic current
+
+# Run pending migrations
+docker compose exec backend alembic upgrade head
+```
+
+#### Common Development Tasks
+
+**Full System Restart:**
+```bash
+# Stop all containers
+docker compose down
+
+# Rebuild and restart
+docker compose up --build
+```
+
+**Backend Development:**
+```bash
+# Run backend with auto-reload
+docker compose exec backend uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+# View backend logs
+docker compose logs -f backend
+```
+
+**Frontend Development:**
+```bash
+# Run frontend with hot reload
+cd frontend && npm start
+
+# View frontend logs
+docker compose logs -f frontend
+```
+
+**Testing:**
+```bash
+# Run all backend tests
+docker compose exec backend pytest -v
+
+# Run specific test file
+docker compose exec backend pytest tests/test_api/test_users_login.py -v
+
+# Run frontend tests
+cd frontend && npm test -- --watchAll=false
+```
+
+**Debugging:**
+```bash
+# Access backend container shell
+docker compose exec backend bash
+
+# View API documentation
+open http://localhost:8000/docs
+
+# Check database content
+docker compose exec backend sqlite3 data/nanalyzer.db ".tables"
+```
+
 ### Project Structure
 
 ```
