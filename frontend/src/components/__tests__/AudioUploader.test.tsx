@@ -1,7 +1,7 @@
-"""
-Frontend test: AudioUploader component
-Test chunked upload logic with progress tracking
-"""
+/**
+ * Frontend test: AudioUploader component
+ * Test chunked upload logic with progress tracking
+ */
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AudioUploader } from '../../components/AudioUploader';
 import { uploadChunked } from '../../services/uploadService';

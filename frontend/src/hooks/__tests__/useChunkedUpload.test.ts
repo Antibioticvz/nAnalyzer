@@ -1,7 +1,7 @@
-"""
-Frontend test: useChunkedUpload hook
-Test chunked upload logic and state management
-"""
+/**
+ * Frontend test: useChunkedUpload hook
+ * Test chunked upload logic and state management
+ */
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useChunkedUpload } from '../../hooks/useChunkedUpload';
 import * as api from '../../services/api';

@@ -15,7 +15,7 @@ python-dotenv==1.0.0
 
 # ML & Audio Processing (per spec: scikit-learn + Vosk)
 scikit-learn==1.4.0
-vosk==0.3.45
+vosk==0.3.44
 librosa==0.10.1
 numpy==1.26.3
 scipy==1.11.4
