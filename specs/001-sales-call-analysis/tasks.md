@@ -71,42 +71,42 @@ nAnalyzer/
 
 ### Backend Contract Tests
 
-- [ ] **T015** [P] Contract test POST /api/v1/users/register in backend/tests/test_api/test_users_register.py
-- [ ] **T016** [P] Contract test POST /api/v1/users/{id}/train-voice in backend/tests/test_api/test_users_train.py
-- [ ] **T017** [P] Contract test GET /api/v1/users/{id} in backend/tests/test_api/test_users_get.py
-- [ ] **T018** [P] Contract test PUT /api/v1/users/{id}/settings in backend/tests/test_api/test_users_settings.py
-- [ ] **T019** [P] Contract test POST /api/v1/analysis/upload in backend/tests/test_api/test_analysis_upload_init.py
-- [ ] **T020** [P] Contract test POST /api/v1/analysis/upload/{id}/chunk in backend/tests/test_api/test_analysis_chunk.py
-- [ ] **T021** [P] Contract test POST /api/v1/analysis/upload/{id}/complete in backend/tests/test_api/test_analysis_complete.py
-- [ ] **T022** [P] Contract test GET /api/v1/calls in backend/tests/test_api/test_calls_list.py
-- [ ] **T023** [P] Contract test GET /api/v1/calls/{id} in backend/tests/test_api/test_calls_get.py
-- [ ] **T024** [P] Contract test GET /api/v1/calls/{id}/segments in backend/tests/test_api/test_calls_segments.py
-- [ ] **T025** [P] Contract test POST /api/v1/calls/{id}/feedback in backend/tests/test_api/test_calls_feedback.py
-- [ ] **T026** [P] Contract test DELETE /api/v1/calls/{id} in backend/tests/test_api/test_calls_delete.py
+- [X] **T015** [P] Contract test POST /api/v1/users/register in backend/tests/test_api/test_users_register.py
+- [X] **T016** [P] Contract test POST /api/v1/users/{id}/train-voice in backend/tests/test_api/test_users_train.py
+- [X] **T017** [P] Contract test GET /api/v1/users/{id} in backend/tests/test_api/test_users_get.py
+- [X] **T018** [P] Contract test PUT /api/v1/users/{id}/settings in backend/tests/test_api/test_users_settings.py
+- [X] **T019** [P] Contract test POST /api/v1/analysis/upload in backend/tests/test_api/test_analysis_upload_init.py
+- [X] **T020** [P] Contract test POST /api/v1/analysis/upload/{id}/chunk in backend/tests/test_api/test_analysis_chunk.py
+- [X] **T021** [P] Contract test POST /api/v1/analysis/upload/{id}/complete in backend/tests/test_api/test_analysis_complete.py
+- [X] **T022** [P] Contract test GET /api/v1/calls in backend/tests/test_api/test_calls_list.py
+- [X] **T023** [P] Contract test GET /api/v1/calls/{id} in backend/tests/test_api/test_calls_get.py
+- [X] **T024** [P] Contract test GET /api/v1/calls/{id}/segments in backend/tests/test_api/test_calls_segments.py
+- [X] **T025** [P] Contract test POST /api/v1/calls/{id}/feedback in backend/tests/test_api/test_calls_feedback.py
+- [X] **T026** [P] Contract test DELETE /api/v1/calls/{id} in backend/tests/test_api/test_calls_delete.py
 
 ### Backend ML Tests
 
-- [ ] **T027** [P] Test audio feature extraction (MFCC, pitch, jitter) in backend/tests/test_ml/test_audio_processing.py
-- [ ] **T028** [P] Test GMM training and calibration in backend/tests/test_ml/test_speaker_id.py
-- [ ] **T029** [P] Test Vosk transcription in backend/tests/test_ml/test_transcription.py
-- [ ] **T030** [P] Test language detection logic in backend/tests/test_ml/test_language_detection.py
-- [ ] **T031** [P] Test rule-based emotion analysis in backend/tests/test_ml/test_emotion_analysis.py
+- [X] **T027** [P] Test audio feature extraction (MFCC, pitch, jitter) in backend/tests/test_ml/test_audio_processing.py
+- [X] **T028** [P] Test GMM training and calibration in backend/tests/test_ml/test_speaker_id.py
+- [X] **T029** [P] Test Vosk transcription in backend/tests/test_ml/test_transcription.py
+- [X] **T030** [P] Test language detection logic in backend/tests/test_ml/test_language_detection.py
+- [X] **T031** [P] Test rule-based emotion analysis in backend/tests/test_ml/test_emotion_analysis.py
 
 ### Backend Integration Tests
 
-- [ ] **T032** [P] Integration test user onboarding flow (register → train voice → GMM created) in backend/tests/test_integration/test_user_onboarding.py
-- [ ] **T033** [P] Integration test simple call analysis (upload → detect lang → transcribe → emotions) in backend/tests/test_integration/test_call_analysis.py
-- [ ] **T034** [P] Integration test feedback collection in backend/tests/test_integration/test_feedback_loop.py
-- [ ] **T035** [P] Integration test cleanup service in backend/tests/test_integration/test_audio_cleanup.py
+- [X] **T032** [P] Integration test user onboarding flow (register → train voice → GMM created) in backend/tests/test_integration/test_user_onboarding.py
+- [X] **T033** [P] Integration test simple call analysis (upload → detect lang → transcribe → emotions) in backend/tests/test_integration/test_call_analysis.py
+- [X] **T034** [P] Integration test feedback collection in backend/tests/test_integration/test_feedback_loop.py
+- [X] **T035** [P] Integration test cleanup service in backend/tests/test_integration/test_audio_cleanup.py
 
 ### Frontend Tests
 
-- [ ] **T036** [P] Test AudioUploader component (chunked upload logic) in frontend/src/components/__tests__/AudioUploader.test.tsx
-- [ ] **T037** [P] Test VoiceRecorder component (microphone recording) in frontend/src/components/__tests__/VoiceRecorder.test.tsx
-- [ ] **T038** [P] Test EmotionChart component (Chart.js rendering) in frontend/src/components/__tests__/EmotionChart.test.tsx
-- [ ] **T039** [P] Test TranscriptView component (scrolling, highlighting) in frontend/src/components/__tests__/TranscriptView.test.tsx
-- [ ] **T040** [P] Test useChunkedUpload hook in frontend/src/hooks/__tests__/useChunkedUpload.test.ts
-- [ ] **T041** [P] Test useWebSocket hook in frontend/src/hooks/__tests__/useWebSocket.test.ts
+- [X] **T036** [P] Test AudioUploader component (chunked upload logic) in frontend/src/components/__tests__/AudioUploader.test.tsx
+- [X] **T037** [P] Test VoiceRecorder component (microphone recording) in frontend/src/components/__tests__/VoiceRecorder.test.tsx
+- [X] **T038** [P] Test EmotionChart component (Chart.js rendering) in frontend/src/components/__tests__/EmotionChart.test.tsx
+- [X] **T039** [P] Test TranscriptView component (scrolling, highlighting) in frontend/src/components/__tests__/TranscriptView.test.tsx
+- [X] **T040** [P] Test useChunkedUpload hook in frontend/src/hooks/__tests__/useChunkedUpload.test.ts
+- [X] **T041** [P] Test useWebSocket hook in frontend/src/hooks/__tests__/useWebSocket.test.ts
 
 ---
 
@@ -114,31 +114,31 @@ nAnalyzer/
 
 ### Database Models
 
-- [ ] **T042** [P] Create User SQLAlchemy model in backend/app/models/user.py
-- [ ] **T043** [P] Create Call SQLAlchemy model in backend/app/models/call.py
-- [ ] **T044** [P] Create Segment SQLAlchemy model in backend/app/models/segment.py
-- [ ] **T045** [P] Create Alert SQLAlchemy model in backend/app/models/alert.py
-- [ ] **T046** [P] Create EmotionFeedback SQLAlchemy model in backend/app/models/feedback.py
+- [X] **T042** [P] Create User SQLAlchemy model in backend/app/models/user.py
+- [X] **T043** [P] Create Call SQLAlchemy model in backend/app/models/call.py
+- [X] **T044** [P] Create Segment SQLAlchemy model in backend/app/models/segment.py
+- [X] **T045** [P] Create Alert SQLAlchemy model in backend/app/models/alert.py
+- [X] **T046** [P] Create EmotionFeedback SQLAlchemy model in backend/app/models/feedback.py
 
 ### Pydantic Schemas
 
-- [ ] **T047** [P] Create user request/response schemas in backend/app/schemas/user.py
-- [ ] **T048** [P] Create call request/response schemas in backend/app/schemas/call.py
-- [ ] **T049** [P] Create analysis request/response schemas in backend/app/schemas/analysis.py
+- [X] **T047** [P] Create user request/response schemas in backend/app/schemas/user.py
+- [X] **T048** [P] Create call request/response schemas in backend/app/schemas/call.py
+- [X] **T049** [P] Create analysis request/response schemas in backend/app/schemas/analysis.py
 
 ### Core Configuration
 
-- [ ] **T050** Create application config (Pydantic settings) in backend/app/core/config.py
-- [ ] **T051** Create database setup (SQLAlchemy engine, session) in backend/app/core/database.py
-- [ ] **T052** [P] Create optional JWT security helpers in backend/app/core/security.py
+- [X] **T050** Create application config (Pydantic settings) in backend/app/core/config.py
+- [X] **T051** Create database setup (SQLAlchemy engine, session) in backend/app/core/database.py
+- [X] **T052** [P] Create optional JWT security helpers in backend/app/core/security.py
 
 ### ML Modules
 
-- [ ] **T053** [P] Implement audio feature extraction (librosa MFCC, pitch, jitter) in backend/app/ml/audio_processing.py
-- [ ] **T054** [P] Implement GMM training and speaker identification in backend/app/ml/speaker_id.py
-- [ ] **T055** [P] Implement Vosk transcription wrapper in backend/app/ml/transcription.py
-- [ ] **T056** [P] Implement dual-model language detection in backend/app/ml/language_detection.py
-- [ ] **T057** [P] Implement rule-based emotion analysis (with RandomForest fallback) in backend/app/ml/emotion_analysis.py
+- [X] **T053** [P] Implement audio feature extraction (librosa MFCC, pitch, jitter) in backend/app/ml/audio_processing.py
+- [X] **T054** [P] Implement GMM training and speaker identification in backend/app/ml/speaker_id.py
+- [X] **T055** [P] Implement Vosk transcription wrapper in backend/app/ml/transcription.py
+- [X] **T056** [P] Implement dual-model language detection in backend/app/ml/language_detection.py
+- [X] **T057** [P] Implement rule-based emotion analysis (with RandomForest fallback) in backend/app/ml/emotion_analysis.py
 
 ### Services Layer
 
