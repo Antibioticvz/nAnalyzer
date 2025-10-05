@@ -1,0 +1,295 @@
+openapi: 3.0.3
+info:
+  title: nAnalyzer Users API
+  description: User registration, voice training, and settings management
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Development server
+
+paths:
+  /users/register:
+    post:
+      summary: Register new user
+      description: Create a new user account with basic information
+      operationId: registerUser
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                  example: "Alice Johnson"
+                email:
+                  type: string
+                  format: email
+                  example: "alice@company.com"
+                role:
+                  type: string
+                  enum: [seller, admin]
+                  default: seller
+                  example: "seller"
+                metadata:
+                  type: object
+                  properties:
+                    company:
+                      type: string
+                    department:
+                      type: string
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/{user_id}:
+    get:
+      summary: Get user information
+      description: Retrieve user details including voice training status
+      operationId: getUser
+      tags:
+        - Users
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "user_abc123"
+        - name: X-User-ID
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Authenticated user ID
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/{user_id}/settings:
+    put:
+      summary: Update user settings
+      description: Update user preferences including audio retention period
+      operationId: updateUserSettings
+      tags:
+        - Users
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-User-ID
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                audio_retention_days:
+                  type: integer
+                  minimum: 1
+                  maximum: 90
+                  description: Days to keep audio files (1-90)
+                  example: 30
+      responses:
+        '200':
+          description: Settings updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: string
+                  audio_retention_days:
+                    type: integer
+                  updated_at:
+                    type: string
+                    format: date-time
+        '400':
+          description: Invalid settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/{user_id}/train-voice:
+    post:
+      summary: Train voice model
+      description: Upload voice samples and train GMM for speaker identification
+      operationId: trainVoiceModel
+      tags:
+        - Users
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-User-ID
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - audio_samples
+              properties:
+                audio_samples:
+                  type: array
+                  minItems: 5
+                  maxItems: 10
+                  items:
+                    type: object
+                    required:
+                      - phrase_number
+                      - audio_base64
+                      - duration
+                    properties:
+                      phrase_number:
+                        type: integer
+                        minimum: 1
+                        maximum: 10
+                      audio_base64:
+                        type: string
+                        format: byte
+                        description: Base64-encoded audio (WAV, 16kHz)
+                      duration:
+                        type: number
+                        format: float
+                        description: Audio duration in seconds
+      responses:
+        '200':
+          description: Voice model trained successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: string
+                  voice_trained:
+                    type: boolean
+                  samples_count:
+                    type: integer
+                  model_accuracy:
+                    type: number
+                    format: float
+                    description: GMM model accuracy (0-1)
+                  model_size_kb:
+                    type: integer
+                  calibrated_threshold:
+                    type: number
+                    format: float
+                    description: Per-user calibrated GMM threshold
+        '400':
+          description: Invalid audio samples
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    UserResponse:
+      type: object
+      properties:
+        user_id:
+          type: string
+          example: "user_abc123"
+        name:
+          type: string
+          example: "Alice Johnson"
+        email:
+          type: string
+          format: email
+          example: "alice@company.com"
+        role:
+          type: string
+          enum: [seller, admin]
+        voice_trained:
+          type: boolean
+          description: Whether GMM voice model has been trained
+        model_path:
+          type: string
+          nullable: true
+          description: Path to pickled GMM model
+        gmm_threshold:
+          type: number
+          format: float
+          nullable: true
+          description: Calibrated speaker identification threshold
+        audio_retention_days:
+          type: integer
+          description: Audio file retention period (1-90 days)
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "ValidationError"
+        message:
+          type: string
+          example: "Invalid email format"
+        code:
+          type: string
+          example: "INVALID_EMAIL"
+        details:
+          type: object
+          additionalProperties: true
+        request_id:
+          type: string
+          example: "req_xyz789"

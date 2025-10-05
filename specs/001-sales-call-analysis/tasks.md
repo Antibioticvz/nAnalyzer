@@ -58,10 +58,10 @@ nAnalyzer/
 
 ## Phase 3.2: Contract Definitions
 
-- [ ] **T011** [P] Create users.yaml OpenAPI contract (POST /register, POST /{id}/train-voice, GET /{id}, PUT /{id}/settings)
-- [ ] **T012** [P] Create analysis.yaml OpenAPI contract (POST /upload, POST /upload/{id}/chunk, POST /upload/{id}/complete)
-- [ ] **T013** [P] Create calls.yaml OpenAPI contract (GET /, GET /{id}, GET /{id}/segments, POST /{id}/feedback, DELETE /{id})
-- [ ] **T014** [P] Create websocket.md specification (upload_progress, analysis_started, segment_complete, analysis_complete, error messages)
+- [X] **T011** [P] Create users.yaml OpenAPI contract (POST /register, POST /{id}/train-voice, GET /{id}, PUT /{id}/settings)
+- [X] **T012** [P] Create analysis.yaml OpenAPI contract (POST /upload, POST /upload/{id}/chunk, POST /upload/{id}/complete)
+- [X] **T013** [P] Create calls.yaml OpenAPI contract (GET /, GET /{id}, GET /{id}/segments, POST /{id}/feedback, DELETE /{id})
+- [X] **T014** [P] Create websocket.md specification (upload_progress, analysis_started, segment_complete, analysis_complete, error messages)
 
 ---
 

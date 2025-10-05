@@ -1,0 +1,382 @@
+openapi: 3.0.3
+info:
+  title: nAnalyzer Calls API
+  description: Call management, retrieval, and feedback collection
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Development server
+
+paths:
+  /calls:
+    get:
+      summary: List user's calls
+      description: Retrieve paginated list of user's analyzed calls
+      operationId: listCalls
+      tags:
+        - Calls
+      parameters:
+        - name: X-User-ID
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: cursor
+          in: query
+          schema:
+            type: string
+          description: Pagination cursor from previous response
+      responses:
+        '200':
+          description: List of calls
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CallSummary'
+                  pagination:
+                    type: object
+                    properties:
+                      next_cursor:
+                        type: string
+                        nullable: true
+                      has_more:
+                        type: boolean
+                      total:
+                        type: integer
+
+  /calls/{call_id}:
+    get:
+      summary: Get call details
+      description: Retrieve complete call analysis including segments and alerts
+      operationId: getCall
+      tags:
+        - Calls
+      parameters:
+        - name: call_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-User-ID
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Call details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallDetails'
+        '404':
+          description: Call not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete call
+      description: Delete call and optionally remove audio file
+      operationId: deleteCall
+      tags:
+        - Calls
+      parameters:
+        - name: call_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-User-ID
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Call deleted successfully
+        '404':
+          description: Call not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /calls/{call_id}/segments:
+    get:
+      summary: Get call segments
+      description: Retrieve all segments with transcriptions and emotions
+      operationId: getCallSegments
+      tags:
+        - Calls
+      parameters:
+        - name: call_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-User-ID
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Call segments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Segment'
+        '404':
+          description: Call not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /calls/{call_id}/feedback:
+    post:
+      summary: Submit emotion corrections
+      description: Provide user feedback to improve emotion models
+      operationId: submitFeedback
+      tags:
+        - Calls
+      parameters:
+        - name: call_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-User-ID
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - segment_id
+              properties:
+                segment_id:
+                  type: integer
+                  description: ID of segment being corrected
+                corrected_enthusiasm:
+                  type: number
+                  format: float
+                  minimum: 0
+                  maximum: 10
+                  nullable: true
+                corrected_agreement:
+                  type: number
+                  format: float
+                  minimum: 0
+                  maximum: 10
+                  nullable: true
+                corrected_stress:
+                  type: number
+                  format: float
+                  minimum: 0
+                  maximum: 10
+                  nullable: true
+      responses:
+        '200':
+          description: Feedback submitted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  feedback_id:
+                    type: string
+                  segment_id:
+                    type: integer
+                  accepted:
+                    type: boolean
+                  total_feedback_count:
+                    type: integer
+        '400':
+          description: Invalid feedback
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    CallSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        filename:
+          type: string
+        duration:
+          type: number
+          format: float
+        detected_language:
+          type: string
+          enum: [ru, en]
+        uploaded_at:
+          type: string
+          format: date-time
+        analyzed:
+          type: boolean
+        avg_client_emotions:
+          type: object
+          nullable: true
+          properties:
+            enthusiasm:
+              type: number
+              format: float
+            agreement:
+              type: number
+              format: float
+            stress:
+              type: number
+              format: float
+
+    CallDetails:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        filename:
+          type: string
+        duration:
+          type: number
+          format: float
+        detected_language:
+          type: string
+          enum: [ru, en]
+        analyzed:
+          type: boolean
+        uploaded_at:
+          type: string
+          format: date-time
+        segments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Segment'
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alert'
+        summary:
+          type: object
+          properties:
+            total_segments:
+              type: integer
+            seller_segments:
+              type: integer
+            client_segments:
+              type: integer
+            avg_client_emotions:
+              type: object
+              properties:
+                enthusiasm:
+                  type: number
+                  format: float
+                agreement:
+                  type: number
+                  format: float
+                stress:
+                  type: number
+                  format: float
+
+    Segment:
+      type: object
+      properties:
+        segment_id:
+          type: integer
+        segment_number:
+          type: integer
+        start_time:
+          type: number
+          format: float
+        end_time:
+          type: number
+          format: float
+        speaker:
+          type: string
+          enum: [seller, client]
+        transcript:
+          type: string
+          nullable: true
+        emotions:
+          type: object
+          nullable: true
+          properties:
+            enthusiasm:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 10
+            agreement:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 10
+            stress:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 10
+
+    Alert:
+      type: object
+      properties:
+        time:
+          type: number
+          format: float
+          description: Timestamp in seconds
+        type:
+          type: string
+          enum:
+            - high_stress
+            - low_enthusiasm
+            - high_enthusiasm
+            - low_agreement
+            - high_agreement
+            - enthusiasm_dropping
+        message:
+          type: string
+        recommendation:
+          type: string
+          nullable: true
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        code:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+        request_id:
+          type: string

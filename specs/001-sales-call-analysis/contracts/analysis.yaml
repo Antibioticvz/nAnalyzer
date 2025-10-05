@@ -1,0 +1,275 @@
+openapi: 3.0.3
+info:
+  title: nAnalyzer Analysis API
+  description: Streaming audio upload and analysis endpoints
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Development server
+
+paths:
+  /analysis/upload:
+    post:
+      summary: Initialize chunked upload
+      description: Start a new chunked upload session for audio analysis
+      operationId: initializeUpload
+      tags:
+        - Analysis
+      parameters:
+        - name: X-User-ID
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+                - filename
+                - total_size_bytes
+              properties:
+                user_id:
+                  type: string
+                  example: "user_abc123"
+                filename:
+                  type: string
+                  example: "call_2025_01_05.wav"
+                total_size_bytes:
+                  type: integer
+                  minimum: 1
+                  maximum: 104857600
+                  description: Total file size (max 100MB)
+                metadata:
+                  type: object
+                  properties:
+                    client_name:
+                      type: string
+                    call_type:
+                      type: string
+                    date:
+                      type: string
+                      format: date
+      responses:
+        '201':
+          description: Upload initialized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  upload_id:
+                    type: string
+                    example: "upload_xyz789"
+                  chunk_size:
+                    type: integer
+                    description: Recommended chunk size in bytes
+                    example: 1048576
+                  call_id:
+                    type: string
+                    example: "call_pending_xyz"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: File too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /analysis/upload/{upload_id}/chunk:
+    post:
+      summary: Upload audio chunk
+      description: Upload a single chunk of audio data
+      operationId: uploadChunk
+      tags:
+        - Analysis
+      parameters:
+        - name: upload_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-User-ID
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - chunk_number
+                - chunk_data
+                - is_last
+              properties:
+                chunk_number:
+                  type: integer
+                  minimum: 0
+                  description: Zero-indexed chunk number
+                chunk_data:
+                  type: string
+                  format: byte
+                  description: Base64-encoded audio chunk
+                is_last:
+                  type: boolean
+                  description: Whether this is the final chunk
+      responses:
+        '200':
+          description: Chunk received
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  upload_id:
+                    type: string
+                  chunks_received:
+                    type: integer
+                  chunks_total:
+                    type: integer
+                    nullable: true
+                  progress_percent:
+                    type: number
+                    format: float
+        '400':
+          description: Invalid chunk
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Upload session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /analysis/upload/{upload_id}/complete:
+    post:
+      summary: Complete upload and trigger analysis
+      description: Finalize upload and start processing pipeline
+      operationId: completeUpload
+      tags:
+        - Analysis
+      parameters:
+        - name: upload_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-User-ID
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Analysis started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  call_id:
+                    type: string
+                    example: "call_abc456"
+                  status:
+                    type: string
+                    enum: [processing, queued]
+                    example: "processing"
+                  estimated_completion_seconds:
+                    type: integer
+                    description: Estimated time to complete
+                    example: 120
+        '404':
+          description: Upload session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /analysis/training-status:
+    get:
+      summary: Check training readiness
+      description: Check if enough feedback samples exist for model retraining
+      operationId: getTrainingStatus
+      tags:
+        - Analysis
+      parameters:
+        - name: X-User-ID
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Training status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  feedback_samples:
+                    type: object
+                    properties:
+                      enthusiasm:
+                        type: integer
+                      agreement:
+                        type: integer
+                      stress:
+                        type: integer
+                  training_threshold:
+                    type: integer
+                    example: 50
+                  models_trained:
+                    type: boolean
+                  last_training_date:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  next_training_date:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  model_accuracy:
+                    type: object
+                    nullable: true
+                    properties:
+                      enthusiasm:
+                        type: number
+                        format: float
+                      agreement:
+                        type: number
+                        format: float
+                      stress:
+                        type: number
+                        format: float
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        code:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+        request_id:
+          type: string
