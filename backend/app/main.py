@@ -23,6 +23,15 @@ async def lifespan(app: FastAPI):
     logger.info("Starting nAnalyzer backend...")
     logger.info(f"Debug mode: {settings.DEBUG}")
     
+    # Create database tables
+    from app.core.database import engine, Base
+    from app.models import user, call, segment, alert, feedback  # Import all models
+    
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    
+    logger.info("Database tables created/verified")
+    
     # Initialize ML models (async loading)
     # Commented out for now - will be implemented when ML modules are ready
     # try:

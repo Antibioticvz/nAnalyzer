@@ -8,13 +8,14 @@ import {
   Paper,
   Typography,
 } from "@mui/material"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import AlertPopup from "../components/AlertPopup"
 import { AudioUploader } from "../components/AudioUploader"
 import { EmotionChart } from "../components/EmotionChart"
 import MetricsCard from "../components/MetricsCard"
 import { TranscriptView } from "../components/TranscriptView"
 import { useWebSocket } from "../hooks/useWebSocket"
+import { apiClient } from "../services/apiClient"
 
 interface AnalysisState {
   callId: string | null
@@ -59,6 +60,11 @@ const AnalysisDashboard: React.FC = () => {
     severity: "info",
     message: "",
   })
+
+  // Set user ID for API calls
+  useEffect(() => {
+    apiClient.setUserId("user_1f61bd63f82f4656") // Use the test user we created
+  }, [])
 
   const handleWebSocketMessage = (message: any) => {
     switch (message.type) {

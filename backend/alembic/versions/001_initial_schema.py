@@ -41,12 +41,7 @@ def upgrade() -> None:
         sa.UniqueConstraint('email')
     )
     
-    # Add CHECK constraint for retention days
-    op.create_check_constraint(
-        'chk_retention_days',
-        'users',
-        'audio_retention_days >= 1 AND audio_retention_days <= 90'
-    )
+    # Note: CHECK constraint for retention days removed due to SQLite limitations
     
     # Calls table
     op.create_table(
