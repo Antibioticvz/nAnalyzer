@@ -4,25 +4,22 @@ Test flow: upload → detect lang → transcribe → emotions
 Must fail until full analysis pipeline is implemented
 """
 import pytest
-from httpx import AsyncClient
-from app.main import app
 import base64
 
 
 @pytest.mark.asyncio
-async def test_simple_call_analysis_flow():
+async def test_simple_call_analysis_flow(client):
     """Test complete call analysis from upload to results"""
-    async with AsyncClient(app=app, base_url="http://test") as client:
-        # Setup: Create and train user
-        reg_response = await client.post(
+            # Setup: Create and train user
+    reg_response = await client.post(
             "/api/v1/users/register",
             json={"name": "Analysis User", "email": "analysis@test.com"}
-        )
-        user_id = reg_response.json()["user_id"]
-        
-        # Train voice (needed for speaker identification)
-        sample_audio = base64.b64encode(b"WAV" + b"\x00" * 1000).decode()
-        await client.post(
+    )
+    user_id = reg_response.json()["user_id"]
+    
+    # Train voice (needed for speaker identification)
+    sample_audio = base64.b64encode(b"WAV" + b"\x00" * 1000).decode()
+    await client.post(
             f"/api/v1/users/{user_id}/train-voice",
             headers={"X-User-ID": user_id},
             json={
@@ -31,10 +28,10 @@ async def test_simple_call_analysis_flow():
                     for i in range(1, 9)
                 ]
             }
-        )
-        
-        # Step 1: Initialize upload
-        init_response = await client.post(
+    )
+    
+    # Step 1: Initialize upload
+    init_response = await client.post(
             "/api/v1/analysis/upload",
             headers={"X-User-ID": user_id},
             json={
@@ -43,13 +40,13 @@ async def test_simple_call_analysis_flow():
                 "total_size_bytes": 2097152,
                 "metadata": {"client_name": "Test Client"}
             }
-        )
-        assert init_response.status_code == 201
-        upload_id = init_response.json()["upload_id"]
-        
-        # Step 2: Upload chunks
-        chunk_data = base64.b64encode(b"audio_data" * 1000).decode()
-        chunk_response = await client.post(
+    )
+    assert init_response.status_code == 201
+    upload_id = init_response.json()["upload_id"]
+    
+    # Step 2: Upload chunks
+    chunk_data = base64.b64encode(b"audio_data" * 1000).decode()
+    chunk_response = await client.post(
             f"/api/v1/analysis/upload/{upload_id}/chunk",
             headers={"X-User-ID": user_id},
             json={
@@ -57,27 +54,27 @@ async def test_simple_call_analysis_flow():
                 "chunk_data": chunk_data,
                 "is_last": True
             }
-        )
-        assert chunk_response.status_code == 200
-        
-        # Step 3: Complete upload and trigger analysis
-        complete_response = await client.post(
+    )
+    assert chunk_response.status_code == 200
+    
+    # Step 3: Complete upload and trigger analysis
+    complete_response = await client.post(
             f"/api/v1/analysis/upload/{upload_id}/complete",
             headers={"X-User-ID": user_id}
-        )
-        assert complete_response.status_code == 200
-        call_id = complete_response.json()["call_id"]
-        
-        # Step 4: Wait for analysis (in real test, use WebSocket or polling)
-        # For now, just verify call exists
-        
-        # Step 5: Retrieve results
-        call_response = await client.get(
+    )
+    assert complete_response.status_code == 200
+    call_id = complete_response.json()["call_id"]
+    
+    # Step 4: Wait for analysis (in real test, use WebSocket or polling)
+    # For now, just verify call exists
+    
+    # Step 5: Retrieve results
+    call_response = await client.get(
             f"/api/v1/calls/{call_id}",
             headers={"X-User-ID": user_id}
-        )
-        
-        if call_response.status_code == 200:
+    )
+    
+    if call_response.status_code == 200:
             call_data = call_response.json()
             assert "detected_language" in call_data
             assert call_data["detected_language"] in ["ru", "en"]

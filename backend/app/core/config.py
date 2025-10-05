@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     # Server
     HOST: str = "0.0.0.0"
     PORT: int = 8000
+    ALLOWED_ORIGINS: list = ["http://localhost:3000", "http://localhost:8000"]
     
     # Database
     DATABASE_URL: str = Field(
