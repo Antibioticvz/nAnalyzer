@@ -142,25 +142,25 @@ nAnalyzer/
 
 ### Services Layer
 
-- [ ] **T058** Implement chunked upload handling service in backend/app/services/upload_service.py
-- [ ] **T059** Implement analysis pipeline orchestration in backend/app/services/analysis_service.py
-- [ ] **T060** [P] Implement background audio cleanup service in backend/app/services/cleanup_service.py
+- [X] **T058** Implement chunked upload handling service in backend/app/services/upload_service.py
+- [X] **T059** Implement analysis pipeline orchestration in backend/app/services/analysis_service.py
+- [X] **T060** [P] Implement background audio cleanup service in backend/app/services/cleanup_service.py
 
 ### API Endpoints
 
-- [ ] **T061** Implement POST /api/v1/users/register endpoint in backend/app/api/users.py
-- [ ] **T062** Implement POST /api/v1/users/{id}/train-voice endpoint in backend/app/api/users.py
-- [ ] **T063** Implement GET /api/v1/users/{id} endpoint in backend/app/api/users.py
-- [ ] **T064** Implement PUT /api/v1/users/{id}/settings endpoint in backend/app/api/users.py
-- [ ] **T065** Implement POST /api/v1/analysis/upload endpoint in backend/app/api/analysis.py
-- [ ] **T066** Implement POST /api/v1/analysis/upload/{id}/chunk endpoint in backend/app/api/analysis.py
-- [ ] **T067** Implement POST /api/v1/analysis/upload/{id}/complete endpoint in backend/app/api/analysis.py
-- [ ] **T068** Implement WebSocket connection handler in backend/app/api/websocket.py
-- [ ] **T069** Implement GET /api/v1/calls endpoint in backend/app/api/calls.py
-- [ ] **T070** Implement GET /api/v1/calls/{id} endpoint in backend/app/api/calls.py
-- [ ] **T071** Implement GET /api/v1/calls/{id}/segments endpoint in backend/app/api/calls.py
-- [ ] **T072** Implement POST /api/v1/calls/{id}/feedback endpoint in backend/app/api/calls.py
-- [ ] **T073** Implement DELETE /api/v1/calls/{id} endpoint in backend/app/api/calls.py
+- [X] **T061** Implement POST /api/v1/users/register endpoint in backend/app/api/users.py
+- [X] **T062** Implement POST /api/v1/users/{id}/train-voice endpoint in backend/app/api/users.py
+- [X] **T063** Implement GET /api/v1/users/{id} endpoint in backend/app/api/users.py
+- [X] **T064** Implement PUT /api/v1/users/{id}/settings endpoint in backend/app/api/users.py
+- [X] **T065** Implement POST /api/v1/analysis/upload endpoint in backend/app/api/analysis.py
+- [X] **T066** Implement POST /api/v1/analysis/upload/{id}/chunk endpoint in backend/app/api/analysis.py
+- [X] **T067** Implement POST /api/v1/analysis/upload/{id}/complete endpoint in backend/app/api/analysis.py
+- [X] **T068** Implement WebSocket connection handler in backend/app/api/websocket.py
+- [X] **T069** Implement GET /api/v1/calls endpoint in backend/app/api/calls.py
+- [X] **T070** Implement GET /api/v1/calls/{id} endpoint in backend/app/api/calls.py
+- [X] **T071** Implement GET /api/v1/calls/{id}/segments endpoint in backend/app/api/calls.py
+- [X] **T072** Implement POST /api/v1/calls/{id}/feedback endpoint in backend/app/api/calls.py
+- [X] **T073** Implement DELETE /api/v1/calls/{id} endpoint in backend/app/api/calls.py
 
 ### FastAPI Application
 
