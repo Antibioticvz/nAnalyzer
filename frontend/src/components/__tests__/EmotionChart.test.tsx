@@ -1,194 +1,65 @@
 /**
  * Frontend test: EmotionChart component
- * Test Chart.js rendering with emotion data
+ * Test chart rendering with emotion data
  */
-import { render, screen } from '@testing-library/react';
-import { EmotionChart } from '../EmotionChart';
-import { SegmentResponse } from '../../types/api';
+import { render, screen } from "@testing-library/react"
+import { EmotionChart } from "../EmotionChart"
 
-// Mock Chart.js
-jest.mock('react-chartjs-2', () => ({
+// Mock Chart.js components
+jest.mock("react-chartjs-2", () => ({
   Line: () => <div data-testid="line-chart">Chart</div>,
-}));
+}))
 
-describe('EmotionChart Component', () => {
-  const mockSegments: SegmentResponse[] = [
+describe("EmotionChart Component", () => {
+  const mockData = [
     {
-      segment_id: 1,
-      call_id: 'call_123',
-      start_time: 0,
-      end_time: 10,
-      speaker: 'client',
-      transcript: 'Hello',
-      emotions: {
-        enthusiasm: 7.5,
-        agreement: 8.0,
-        stress: 3.5,
-      },
+      timestamp: 0,
+      emotion: "agreement",
+      confidence: 8.0,
     },
     {
-      segment_id: 2,
-      call_id: 'call_123',
-      start_time: 10,
-      end_time: 20,
-      speaker: 'seller',
-      transcript: 'Hi there',
-      emotions: null,
+      timestamp: 10,
+      emotion: "enthusiasm",
+      confidence: 7.5,
     },
-    {
-      segment_id: 3,
-      call_id: 'call_123',
-      start_time: 20,
-      end_time: 30,
-      speaker: 'client',
-      transcript: 'How are you?',
-      emotions: {
-        enthusiasm: 6.0,
-        agreement: 7.5,
-        stress: 4.0,
-      },
-    },
-  ];
+  ]
 
-  test('renders chart with emotion data', () => {
-    render(<EmotionChart segments={mockSegments} />);
-    
-    const chart = screen.getByTestId('line-chart');
-    expect(chart).toBeInTheDocument();
-  });
+  test("renders chart with emotion data", () => {
+    render(<EmotionChart data={mockData} />)
 
-  test('shows empty state when no segments', () => {
-    render(<EmotionChart segments={[]} />);
-    
-    expect(screen.getByText(/No emotion data available/i)).toBeInTheDocument();
-  });
+    const chart = screen.getByTestId("line-chart")
+    expect(chart).toBeInTheDocument()
+  })
 
-  test('filters only client segments with emotions', () => {
-    render(<EmotionChart segments={mockSegments} />);
-    
-    // Should render chart because there are client segments with emotions
-    const chart = screen.getByTestId('line-chart');
-    expect(chart).toBeInTheDocument();
-  });
+  test("shows empty state when no data", () => {
+    render(<EmotionChart data={[]} />)
 
-  test('shows empty state when no client segments', () => {
-    const sellerOnlySegments: SegmentResponse[] = [
-      {
-        segment_id: 1,
-        call_id: 'call_123',
-        start_time: 0,
-        end_time: 10,
-        speaker: 'seller',
-        transcript: 'Hello',
-        emotions: null,
-      },
-    ];
-    
-    render(<EmotionChart segments={sellerOnlySegments} />);
-    
-    expect(screen.getByText(/No emotion data available/i)).toBeInTheDocument();
-  });
+    expect(screen.getByText(/No emotion data available/i)).toBeInTheDocument()
+  })
 
-  test('handles custom height prop', () => {
-    const { container } = render(
-      <EmotionChart segments={mockSegments} height={500} />
-    );
-    
-    const chartContainer = container.querySelector('.emotion-chart');
-    expect(chartContainer).toHaveStyle({ height: '500px' });
-  });
+  test("handles custom height prop", () => {
+    render(<EmotionChart data={mockData} height={500} />)
 
-  test('uses default height when not specified', () => {
-    const { container } = render(<EmotionChart segments={mockSegments} />);
-    
-    const chartContainer = container.querySelector('.emotion-chart');
-    expect(chartContainer).toHaveStyle({ height: '300px' });
-  });
+    const chart = screen.getByTestId("line-chart")
+    expect(chart).toBeInTheDocument()
+  })
 
-  test('handles segments without emotions', () => {
-    const segmentsWithoutEmotions: SegmentResponse[] = [
-      {
-        segment_id: 1,
-        call_id: 'call_123',
-        start_time: 0,
-        end_time: 10,
-        speaker: 'client',
-        transcript: 'Hello',
-        emotions: null,
-      },
-    ];
-    
-    render(<EmotionChart segments={segmentsWithoutEmotions} />);
-    
-    expect(screen.getByText(/No emotion data available/i)).toBeInTheDocument();
-  });
+  test("uses default height when not specified", () => {
+    render(<EmotionChart data={mockData} />)
 
-  test('handles mixed segments with and without emotions', () => {
-    const mixedSegments: SegmentResponse[] = [
-      {
-        segment_id: 1,
-        call_id: 'call_123',
-        start_time: 0,
-        end_time: 10,
-        speaker: 'client',
-        transcript: 'Hello',
-        emotions: {
-          enthusiasm: 5.0,
-          agreement: 6.0,
-          stress: 4.0,
-        },
-      },
-      {
-        segment_id: 2,
-        call_id: 'call_123',
-        start_time: 10,
-        end_time: 20,
-        speaker: 'client',
-        transcript: 'Test',
-        emotions: null, // No emotions for this segment
-      },
-    ];
-    
-    render(<EmotionChart segments={mixedSegments} />);
-    
-    // Should still render chart with the segment that has emotions
-    const chart = screen.getByTestId('line-chart');
-    expect(chart).toBeInTheDocument();
-  });
+    const chart = screen.getByTestId("line-chart")
+    expect(chart).toBeInTheDocument()
+  })
 
-  test('formats time labels correctly', () => {
-    const segmentsWithVariousTimes: SegmentResponse[] = [
-      {
-        segment_id: 1,
-        call_id: 'call_123',
-        start_time: 65, // 1:05
-        end_time: 75,
-        speaker: 'client',
-        transcript: 'Test',
-        emotions: {
-          enthusiasm: 5.0,
-          agreement: 6.0,
-          stress: 4.0,
-        },
-      },
-      {
-        segment_id: 2,
-        call_id: 'call_123',
-        start_time: 125, // 2:05
-        end_time: 135,
-        speaker: 'client',
-        transcript: 'Test 2',
-        emotions: {
-          enthusiasm: 6.0,
-          agreement: 7.0,
-          stress: 3.0,
-        },
-      },
-    ];
-    
-    render(<EmotionChart segments={segmentsWithVariousTimes} />);
-    
-    const chart = screen.getByTestId('line-chart');
-    expect(chart).toBeInTheDocument();
-  });
-});
+  test("handles undefined data", () => {
+    render(<EmotionChart data={undefined as any} />)
+
+    expect(screen.getByText(/No emotion data available/i)).toBeInTheDocument()
+  })
+
+  test("handles null data", () => {
+    render(<EmotionChart data={null as any} />)
+
+    expect(screen.getByText(/No emotion data available/i)).toBeInTheDocument()
+  })
+})

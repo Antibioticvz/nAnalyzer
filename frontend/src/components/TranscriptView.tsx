@@ -52,6 +52,9 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
       joy: "positive",
       sadness: "negative",
       surprise: "neutral",
+      stress: "negative",
+      agreement: "positive",
+      enthusiasm: "positive",
     }
     return colors[emotion] || "neutral"
   }
@@ -95,7 +98,7 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
             >
               <div className="segment-header">
                 <span className="speaker-label">
-                  {segment.speaker === "agent" ? "🎤 Agent" : "👤 Client"}
+                  {segment.speaker === "seller" ? "🎤 Agent" : "👤 Client"}
                 </span>
                 <span className="timestamp">
                   {formatTime(segment.start_time)}
@@ -109,7 +112,7 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
               {segment.speaker === "client" && (
                 <div className="segment-emotions">
                   <span className="emotion-badge">
-                    {segment.emotion} ({segment.confidence.toFixed(2)})
+                    {segment.emotion} ({segment.confidence.toFixed(0)})
                   </span>
                 </div>
               )}

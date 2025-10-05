@@ -40,7 +40,7 @@ export const EmotionChart: React.FC<EmotionChartProps> = ({
   height = 300,
 }) => {
   // Group data by emotion
-  const emotionGroups = data.reduce(
+  const emotionGroups = (data || []).reduce(
     (acc, item) => {
       if (!acc[item.emotion]) acc[item.emotion] = []
       acc[item.emotion].push(item)
@@ -49,7 +49,7 @@ export const EmotionChart: React.FC<EmotionChartProps> = ({
     {} as Record<string, typeof data>
   )
 
-  const labels = data.map(item =>
+  const labels = (data || []).map(item =>
     new Date(item.timestamp * 1000).toLocaleTimeString()
   )
 
