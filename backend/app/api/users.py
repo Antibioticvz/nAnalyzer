@@ -23,7 +23,7 @@ from app.core.config import settings
 import base64
 import os
 
-router = APIRouter(prefix="/api/v1/users", tags=["users"])
+router = APIRouter(tags=["users"])
 
 
 @router.post("/register", response_model=UserResponse, status_code=201)
@@ -59,7 +59,18 @@ async def register_user(
     await db.commit()
     await db.refresh(user)
     
-    return user
+    return UserResponse(
+        user_id=user.id,
+        name=user.name,
+        email=user.email,
+        role=user.role,
+        voice_trained=user.voice_trained,
+        model_path=user.model_path,
+        gmm_threshold=user.gmm_threshold,
+        audio_retention_days=user.audio_retention_days,
+        created_at=user.created_at,
+        updated_at=user.updated_at
+    )
 
 
 @router.post("/{user_id}/train-voice", response_model=VoiceTrainingResponse)
@@ -150,7 +161,18 @@ async def get_user(
             detail={"error": "NotFound", "message": "User not found"}
         )
     
-    return user
+    return UserResponse(
+        user_id=user.id,
+        name=user.name,
+        email=user.email,
+        role=user.role,
+        voice_trained=user.voice_trained,
+        model_path=user.model_path,
+        gmm_threshold=user.gmm_threshold,
+        audio_retention_days=user.audio_retention_days,
+        created_at=user.created_at,
+        updated_at=user.updated_at
+    )
 
 
 @router.put("/{user_id}/settings", response_model=UserSettingsResponse)

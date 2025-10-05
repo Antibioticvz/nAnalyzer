@@ -25,7 +25,7 @@ from app.schemas.call import (
     FeedbackResponse
 )
 
-router = APIRouter(prefix="/api/v1/calls", tags=["calls"])
+router = APIRouter(tags=["calls"])
 
 
 @router.get("", response_model=CallListResponse)

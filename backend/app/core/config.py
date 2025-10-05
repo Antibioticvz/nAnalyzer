@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     )
     
     # File Storage
+    DATA_DIR: str = "./data"
     UPLOAD_DIR: str = "./data/uploads"
     AUDIO_DIR: str = "./data/audio"
     MODELS_DIR: str = "./models"
