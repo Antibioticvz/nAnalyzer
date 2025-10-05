@@ -7,10 +7,14 @@ import CallDetails from "./pages/CallDetails"
 import CallHistory from "./pages/CallHistory"
 import Dashboard from "./pages/Dashboard"
 import LiveMonitoring from "./pages/LiveMonitoring"
+import Login from "./pages/Login"
+import Register from "./pages/Register"
 import Settings from "./pages/Settings"
+import VoiceTraining from "./pages/VoiceTraining"
 
 // Layout components
 import Navigation from "./components/Navigation"
+import ProtectedRoute from "./components/ProtectedRoute"
 
 function App() {
   return (
@@ -19,12 +23,57 @@ function App() {
         <Navigation />
         <main className="main-content">
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/live" element={<LiveMonitoring />} />
-            <Route path="/history" element={<CallHistory />} />
-            <Route path="/calls/:id" element={<CallDetails />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/voice-training/:userId" element={<VoiceTraining />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/live"
+              element={
+                <ProtectedRoute>
+                  <LiveMonitoring />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/history"
+              element={
+                <ProtectedRoute>
+                  <CallHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/calls/:id"
+              element={
+                <ProtectedRoute>
+                  <CallDetails />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/analytics"
+              element={
+                <ProtectedRoute>
+                  <Analytics />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </main>
       </div>

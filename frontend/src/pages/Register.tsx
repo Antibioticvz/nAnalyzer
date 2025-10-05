@@ -1,49 +1,55 @@
-import React, { useState } from 'react';
 import {
+  Alert,
+  Box,
+  Button,
   Container,
   Paper,
   TextField,
-  Button,
   Typography,
-  Box,
-  Alert,
-} from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import api from '../services/apiClient';
+} from "@mui/material"
+import React, { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { useAuth } from "../contexts/AuthContext"
 
 const Register: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
+  const { register } = useAuth()
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    language_preference: 'en',
-  });
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+    name: "",
+    email: "",
+    language_preference: "en",
+  })
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
-    });
-  };
+    })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
 
     try {
-      const response = await api.post('/api/v1/users/register', formData);
-      const userId = response.data.id;
+      const userId = await register({
+        name: formData.name,
+        email: formData.email,
+        role: "seller",
+      })
       // Navigate to voice training page
-      navigate(`/voice-training/${userId}`);
+      navigate(`/voice-training/${userId}`)
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Registration failed. Please try again.');
+      setError(
+        err.response?.data?.detail || "Registration failed. Please try again."
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <Container maxWidth="sm">
@@ -52,7 +58,12 @@ const Register: React.FC = () => {
           <Typography variant="h4" component="h1" gutterBottom align="center">
             Register for nAnalyzer
           </Typography>
-          <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            align="center"
+            sx={{ mb: 3 }}
+          >
             Create your account to start analyzing sales calls
           </Typography>
 
@@ -108,15 +119,15 @@ const Register: React.FC = () => {
               disabled={loading}
               sx={{ mt: 3, mb: 2 }}
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? "Creating Account..." : "Create Account"}
             </Button>
 
             <Typography variant="body2" color="text.secondary" align="center">
-              Already have an account?{' '}
+              Already have an account?{" "}
               <Button
                 variant="text"
                 size="small"
-                onClick={() => navigate('/login')}
+                onClick={() => navigate("/login")}
               >
                 Sign In
               </Button>
@@ -125,7 +136,7 @@ const Register: React.FC = () => {
         </Paper>
       </Box>
     </Container>
-  );
-};
+  )
+}
 
-export default Register;
+export default Register

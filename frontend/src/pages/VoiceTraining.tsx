@@ -13,7 +13,7 @@ import {
 import React, { useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { VoiceRecorder } from "../components/VoiceRecorder"
-import api from "../services/apiClient"
+import { apiClient } from "../services/apiClient"
 
 const TRAINING_PHRASES = [
   "Hello, how are you today?",
@@ -66,11 +66,11 @@ const VoiceTraining: React.FC = () => {
         formData.append(`recordings`, blob, `phrase_${index}.wav`)
       })
 
-      await api.post(`/api/v1/users/${userId}/train-voice`, formData, {
+      await apiClient.post(`/api/v1/users/${userId}/train-voice`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
 
-      navigate("/dashboard")
+      navigate("/")
     } catch (err: any) {
       setError(
         err.response?.data?.detail ||
