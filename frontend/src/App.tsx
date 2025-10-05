@@ -18,7 +18,7 @@ import ProtectedRoute from "./components/ProtectedRoute"
 
 function App() {
   return (
-    <Router>
+    <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
       <div className="App">
         <Navigation />
         <main className="main-content">
