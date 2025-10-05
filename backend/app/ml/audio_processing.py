@@ -133,11 +133,9 @@ def extract_all_features(audio: np.ndarray, sample_rate: int) -> Dict[str, Any]:
     """
     features = {}
     
-    # MFCC features
+    # MFCC features (full array for GMM/classifier)
     mfcc = extract_mfcc(audio, sample_rate)
     features['mfcc'] = mfcc
-    features['mfcc_mean'] = np.mean(mfcc, axis=1)
-    features['mfcc_std'] = np.std(mfcc, axis=1)
     
     # Pitch features
     pitch = extract_pitch(audio, sample_rate)

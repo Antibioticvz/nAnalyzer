@@ -3,6 +3,8 @@ Vosk transcription wrapper
 Per spec: Dual-language support (Russian + English) with Vosk
 """
 import json
+import numpy as np
+import librosa
 from vosk import Model, KaldiRecognizer
 from typing import Dict, Any
 from pathlib import Path
@@ -80,6 +82,22 @@ class VoskTranscriber:
         Returns:
             Dictionary with 'text' and 'confidence'
         """
+        # Vosk models are trained for 16kHz, resample if needed
+        target_sample_rate = 16000
+        
+        if sample_rate != target_sample_rate:
+            # Convert bytes to numpy array
+            audio_array = np.frombuffer(audio_bytes, dtype=np.int16)
+            # Resample using librosa
+            audio_resampled = librosa.resample(
+                audio_array.astype(np.float32),
+                orig_sr=sample_rate,
+                target_sr=target_sample_rate
+            )
+            # Convert back to bytes
+            audio_bytes = audio_resampled.astype(np.int16).tobytes()
+            sample_rate = target_sample_rate
+        
         # Create recognizer
         recognizer = KaldiRecognizer(self.model, sample_rate)
         recognizer.SetWords(True)

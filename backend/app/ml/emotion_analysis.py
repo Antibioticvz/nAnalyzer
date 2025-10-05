@@ -52,13 +52,13 @@ def calculate_enthusiasm_score(features: Dict[str, float]) -> float:
         Enthusiasm score (0-10)
     """
     # Pitch variance component (higher = more enthusiastic)
-    pitch_score = normalize(features.get('pitch_std', 0), 0, 50) * 10
+    pitch_score = normalize(features.get('pitch_std', 0), 0, 50)
     
     # Energy component (louder = more enthusiastic)
-    energy_score = normalize(features.get('energy_mean', 0), 0, 0.1) * 10
+    energy_score = normalize(features.get('energy_mean', 0), 0, 0.1)
     
     # Tempo component (faster = more enthusiastic)
-    tempo_score = normalize(features.get('tempo', 120), 60, 180) * 10
+    tempo_score = normalize(features.get('tempo', 120), 60, 180)
     
     # Combine (weighted average)
     enthusiasm = (pitch_score * 0.4 + energy_score * 0.3 + tempo_score * 0.3)
@@ -128,7 +128,7 @@ def calculate_stress_score(features: Dict[str, float]) -> float:
     """
     # Jitter component (higher jitter = more stress)
     jitter = features.get('jitter', 0)
-    jitter_score = normalize(jitter, 0, 5) * 10
+    jitter_score = normalize(jitter, 0, 5)
     
     # Pause component (longer pauses might indicate stress or hesitation)
     # This would need pause detection in audio_processing
