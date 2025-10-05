@@ -15,7 +15,6 @@ import {
   ChartOptions,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { SegmentResponse } from '../types/api';
 
 ChartJS.register(
   CategoryScale,
@@ -28,56 +27,38 @@ ChartJS.register(
 );
 
 interface EmotionChartProps {
-  segments: SegmentResponse[];
+  data: Array<{
+    timestamp: number;
+    emotion: string;
+    confidence: number;
+  }>;
   height?: number;
 }
 
 export const EmotionChart: React.FC<EmotionChartProps> = ({
-  segments,
+  data,
   height = 300,
 }) => {
-  // Filter only client segments with emotions
-  const clientSegments = segments.filter(
-    (seg) => seg.speaker === 'client' && seg.emotions
-  );
+  // Group data by emotion
+  const emotionGroups = data.reduce((acc, item) => {
+    if (!acc[item.emotion]) acc[item.emotion] = [];
+    acc[item.emotion].push(item);
+    return acc;
+  }, {} as Record<string, typeof data>);
 
-  // Extract data for chart
-  const labels = clientSegments.map((seg) => {
-    const time = Math.floor(seg.start_time);
-    const minutes = Math.floor(time / 60);
-    const seconds = time % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  });
+  const labels = data.map((item) => new Date(item.timestamp * 1000).toLocaleTimeString());
 
-  const enthusiasmData = clientSegments.map((seg) => seg.emotions?.enthusiasm ?? 0);
-  const agreementData = clientSegments.map((seg) => seg.emotions?.agreement ?? 0);
-  const stressData = clientSegments.map((seg) => seg.emotions?.stress ?? 0);
+  const datasets = Object.entries(emotionGroups).map(([emotion, items]) => ({
+    label: emotion,
+    data: items.map((item) => item.confidence),
+    borderColor: getEmotionColor(emotion),
+    backgroundColor: getEmotionColor(emotion, 0.1),
+    tension: 0.4,
+  }));
 
-  const data = {
+  const chartData = {
     labels,
-    datasets: [
-      {
-        label: 'Enthusiasm',
-        data: enthusiasmData,
-        borderColor: 'rgb(75, 192, 192)',
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        tension: 0.3,
-      },
-      {
-        label: 'Agreement',
-        data: agreementData,
-        borderColor: 'rgb(54, 162, 235)',
-        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-        tension: 0.3,
-      },
-      {
-        label: 'Stress',
-        data: stressData,
-        borderColor: 'rgb(255, 99, 132)',
-        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-        tension: 0.3,
-      },
-    ],
+    datasets,
   };
 
   const options: ChartOptions<'line'> = {
@@ -89,26 +70,16 @@ export const EmotionChart: React.FC<EmotionChartProps> = ({
       },
       title: {
         display: true,
-        text: 'Client Emotions Over Time',
-      },
-      tooltip: {
-        callbacks: {
-          label: (context) => {
-            return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}/10`;
-          },
-        },
+        text: 'Emotion Analysis Over Time',
       },
     },
     scales: {
       y: {
-        min: 0,
-        max: 10,
-        ticks: {
-          stepSize: 2,
-        },
+        beginAtZero: true,
+        max: 1,
         title: {
           display: true,
-          text: 'Score (0-10)',
+          text: 'Confidence',
         },
       },
       x: {
@@ -120,17 +91,30 @@ export const EmotionChart: React.FC<EmotionChartProps> = ({
     },
   };
 
-  if (clientSegments.length === 0) {
+  if (data.length === 0) {
     return (
-      <div className="emotion-chart-empty">
+      <div style={{ height: `${height}px`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p>No emotion data available yet. Upload and analyze a call first.</p>
       </div>
     );
   }
 
   return (
-    <div className="emotion-chart" style={{ height: `${height}px` }}>
-      <Line data={data} options={options} />
+    <div style={{ height: `${height}px` }}>
+      <Line data={chartData} options={options} />
     </div>
   );
 };
+
+function getEmotionColor(emotion: string, alpha = 1): string {
+  const colors: Record<string, string> = {
+    positive: `rgba(76, 175, 80, ${alpha})`,
+    negative: `rgba(244, 67, 54, ${alpha})`,
+    neutral: `rgba(96, 125, 139, ${alpha})`,
+    anger: `rgba(255, 87, 34, ${alpha})`,
+    joy: `rgba(255, 193, 7, ${alpha})`,
+    sadness: `rgba(33, 150, 243, ${alpha})`,
+    surprise: `rgba(156, 39, 176, ${alpha})`,
+  };
+  return colors[emotion] || `rgba(158, 158, 158, ${alpha})`;
+}

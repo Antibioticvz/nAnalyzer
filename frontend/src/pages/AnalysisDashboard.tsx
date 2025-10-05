@@ -1,44 +1,44 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from "react"
 import {
   Container,
-  Grid2 as Grid,
+  Grid,
   Paper,
   Typography,
   Box,
   Button,
   CircularProgress,
-} from '@mui/material';
-import { Refresh as RefreshIcon } from '@mui/icons-material';
-import { AudioUploader } from '../components/AudioUploader';
-import MetricsCard from '../components/MetricsCard';
-import { EmotionChart } from '../components/EmotionChart';
-import { TranscriptView } from '../components/TranscriptView';
-import AlertPopup from '../components/AlertPopup';
-import { useWebSocket } from '../hooks/useWebSocket';
+} from "@mui/material"
+import { Refresh as RefreshIcon } from "@mui/icons-material"
+import { AudioUploader } from "../components/AudioUploader"
+import MetricsCard from "../components/MetricsCard"
+import { EmotionChart } from "../components/EmotionChart"
+import { TranscriptView } from "../components/TranscriptView"
+import AlertPopup from "../components/AlertPopup"
+import { useWebSocket } from "../hooks/useWebSocket"
 
 interface AnalysisState {
-  callId: string | null;
-  isAnalyzing: boolean;
+  callId: string | null
+  isAnalyzing: boolean
   currentEmotion: {
-    emotion: string;
-    confidence: number;
-    timestamp: string;
-    speakerLabel: string;
-  } | null;
+    emotion: string
+    confidence: number
+    timestamp: string
+    speakerLabel: string
+  } | null
   emotionHistory: Array<{
-    timestamp: number;
-    emotion: string;
-    confidence: number;
-  }>;
+    timestamp: number
+    emotion: string
+    confidence: number
+  }>
   segments: Array<{
-    id: string;
-    text: string;
-    speaker: string;
-    start_time: number;
-    end_time: number;
-    emotion: string;
-    confidence: number;
-  }>;
+    id: string
+    text: string
+    speaker: string
+    start_time: number
+    end_time: number
+    emotion: string
+    confidence: number
+  }>
 }
 
 const AnalysisDashboard: React.FC = () => {
@@ -48,32 +48,32 @@ const AnalysisDashboard: React.FC = () => {
     currentEmotion: null,
     emotionHistory: [],
     segments: [],
-  });
+  })
 
   const [alert, setAlert] = useState<{
-    open: boolean;
-    severity: 'error' | 'warning' | 'info' | 'success';
-    message: string;
+    open: boolean
+    severity: "error" | "warning" | "info" | "success"
+    message: string
   }>({
     open: false,
-    severity: 'info',
-    message: '',
-  });
+    severity: "info",
+    message: "",
+  })
 
   const handleWebSocketMessage = (message: any) => {
     switch (message.type) {
-      case 'analysis_started':
-        setState((prev) => ({ ...prev, isAnalyzing: true }));
+      case "analysis_started":
+        setState(prev => ({ ...prev, isAnalyzing: true }))
         setAlert({
           open: true,
-          severity: 'info',
-          message: 'Analysis started',
-        });
-        break;
+          severity: "info",
+          message: "Analysis started",
+        })
+        break
 
-      case 'segment_complete':
-        const segment = message.data;
-        setState((prev) => ({
+      case "segment_complete":
+        const segment = message.data
+        setState(prev => ({
           ...prev,
           segments: [...prev.segments, segment],
           currentEmotion: {
@@ -90,34 +90,36 @@ const AnalysisDashboard: React.FC = () => {
               confidence: segment.confidence,
             },
           ],
-        }));
-        break;
+        }))
+        break
 
-      case 'analysis_complete':
-        setState((prev) => ({ ...prev, isAnalyzing: false }));
+      case "analysis_complete":
+        setState(prev => ({ ...prev, isAnalyzing: false }))
         setAlert({
           open: true,
-          severity: 'success',
-          message: 'Analysis completed successfully',
-        });
-        break;
+          severity: "success",
+          message: "Analysis completed successfully",
+        })
+        break
 
-      case 'error':
-        setState((prev) => ({ ...prev, isAnalyzing: false }));
+      case "error":
+        setState(prev => ({ ...prev, isAnalyzing: false }))
         setAlert({
           open: true,
-          severity: 'error',
-          message: message.data.message || 'Analysis failed',
-        });
-        break;
+          severity: "error",
+          message: message.data.message || "Analysis failed",
+        })
+        break
     }
-  };
+  }
 
-  const { isConnected: _isConnected, lastMessage: _lastMessage } = useWebSocket({
-    url: state.callId ? `ws://localhost:8000/ws/${state.callId}` : '',
-    onMessage: handleWebSocketMessage,
-    reconnect: true,
-  });
+  const { isConnected: _isConnected, lastMessage: _lastMessage } = useWebSocket(
+    {
+      url: state.callId ? `ws://localhost:8000/ws/${state.callId}` : "",
+      onMessage: handleWebSocketMessage,
+      reconnect: true,
+    }
+  )
 
   const handleUploadComplete = async (callId: string) => {
     setState({
@@ -126,22 +128,22 @@ const AnalysisDashboard: React.FC = () => {
       currentEmotion: null,
       emotionHistory: [],
       segments: [],
-    });
+    })
 
     setAlert({
       open: true,
-      severity: 'info',
-      message: 'Upload complete. Starting analysis...',
-    });
-  };
+      severity: "info",
+      message: "Upload complete. Starting analysis...",
+    })
+  }
 
   const handleUploadError = (error: string) => {
     setAlert({
       open: true,
-      severity: 'error',
+      severity: "error",
       message: error,
-    });
-  };
+    })
+  }
 
   const handleReset = () => {
     setState({
@@ -150,13 +152,18 @@ const AnalysisDashboard: React.FC = () => {
       currentEmotion: null,
       emotionHistory: [],
       segments: [],
-    });
-  };
+    })
+  }
 
   return (
     <Container maxWidth="xl">
       <Box sx={{ mt: 4, mb: 4 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={3}
+        >
           <Typography variant="h4" component="h1">
             Analysis Dashboard
           </Typography>
@@ -171,15 +178,16 @@ const AnalysisDashboard: React.FC = () => {
           )}
         </Box>
 
-        <Grid container spacing={3}>
+        <Grid spacing={3}>
           {/* Upload Section */}
           {!state.callId && (
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Paper sx={{ p: 4 }}>
                 <Typography variant="h6" gutterBottom>
                   Upload Audio File
                 </Typography>
                 <AudioUploader
+                  userId="default"
                   onUploadComplete={handleUploadComplete}
                   onUploadError={handleUploadError}
                 />
@@ -189,8 +197,8 @@ const AnalysisDashboard: React.FC = () => {
 
           {/* Analysis in Progress */}
           {state.isAnalyzing && (
-            <Grid item xs={12}>
-              <Paper sx={{ p: 4, textAlign: 'center' }}>
+            <Grid size={12}>
+              <Paper sx={{ p: 4, textAlign: "center" }}>
                 <CircularProgress size={60} sx={{ mb: 2 }} />
                 <Typography variant="h6">Analyzing Audio...</Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -202,7 +210,7 @@ const AnalysisDashboard: React.FC = () => {
 
           {/* Current Emotion Metrics */}
           {state.currentEmotion && (
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <MetricsCard
                 emotion={state.currentEmotion.emotion}
                 confidence={state.currentEmotion.confidence}
@@ -214,7 +222,7 @@ const AnalysisDashboard: React.FC = () => {
 
           {/* Emotion Chart */}
           {state.emotionHistory.length > 0 && (
-            <Grid item xs={12} md={8}>
+            <Grid size={{ xs: 12, md: 8 }}>
               <Paper sx={{ p: 3 }}>
                 <Typography variant="h6" gutterBottom>
                   Emotion Timeline
@@ -226,7 +234,7 @@ const AnalysisDashboard: React.FC = () => {
 
           {/* Transcript View */}
           {state.segments.length > 0 && (
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Paper sx={{ p: 3 }}>
                 <Typography variant="h6" gutterBottom>
                   Transcript
@@ -245,7 +253,7 @@ const AnalysisDashboard: React.FC = () => {
         />
       </Box>
     </Container>
-  );
-};
+  )
+}
 
-export default AnalysisDashboard;
+export default AnalysisDashboard

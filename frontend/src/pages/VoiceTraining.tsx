@@ -132,6 +132,8 @@ const VoiceTraining: React.FC = () => {
               </Paper>
 
               <VoiceRecorder
+                phraseNumber={currentPhrase + 1}
+                phraseText={TRAINING_PHRASES[currentPhrase]}
                 onRecordingComplete={handleRecordingComplete}
               />
 

@@ -3,12 +3,21 @@
  * Displays call transcript with speaker labels and emotion highlighting
  */
 import React, { useState, useRef, useEffect } from 'react';
-import { SegmentResponse } from '../types/api';
+
+interface TranscriptSegment {
+  id: string;
+  text: string;
+  speaker: string;
+  start_time: number;
+  end_time: number;
+  emotion: string;
+  confidence: number;
+}
 
 interface TranscriptViewProps {
-  segments: SegmentResponse[];
-  onSegmentClick?: (segment: SegmentResponse) => void;
-  highlightedSegmentId?: number;
+  segments: TranscriptSegment[];
+  onSegmentClick?: (segment: TranscriptSegment) => void;
+  highlightedSegmentId?: string;
 }
 
 export const TranscriptView: React.FC<TranscriptViewProps> = ({
@@ -16,7 +25,7 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
   onSegmentClick,
   highlightedSegmentId,
 }) => {
-  const [selectedSegment, setSelectedSegment] = useState<number | null>(null);
+  const [selectedSegment, setSelectedSegment] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,23 +38,22 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
     }
   }, [highlightedSegmentId]);
 
-  const handleSegmentClick = (segment: SegmentResponse) => {
-    setSelectedSegment(segment.segment_id);
+  const handleSegmentClick = (segment: TranscriptSegment) => {
+    setSelectedSegment(segment.id);
     onSegmentClick?.(segment);
   };
 
-  const getEmotionColor = (emotions: SegmentResponse['emotions']) => {
-    if (!emotions) return 'neutral';
-
-    // Determine dominant emotion
-    const { enthusiasm, agreement, stress } = emotions;
-    
-    if (stress > 7) return 'high-stress';
-    if (enthusiasm > 7) return 'high-enthusiasm';
-    if (agreement < 4) return 'low-agreement';
-    if (enthusiasm < 4) return 'low-enthusiasm';
-    
-    return 'neutral';
+  const getEmotionColor = (emotion: string) => {
+    const colors: Record<string, string> = {
+      positive: 'positive',
+      negative: 'negative',
+      neutral: 'neutral',
+      anger: 'negative',
+      joy: 'positive',
+      sadness: 'negative',
+      surprise: 'neutral',
+    };
+    return colors[emotion] || 'neutral';
   };
 
   const formatTime = (seconds: number): string => {
@@ -76,20 +84,20 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
         ) : (
           segments.map((segment) => (
             <div
-              key={segment.segment_id}
-              id={`segment-${segment.segment_id}`}
+              key={segment.id}
+              id={`segment-${segment.id}`}
               className={`transcript-segment ${segment.speaker} ${
-                getEmotionColor(segment.emotions)
+                getEmotionColor(segment.emotion)
               } ${
-                selectedSegment === segment.segment_id ? 'selected' : ''
+                selectedSegment === segment.id ? 'selected' : ''
               } ${
-                highlightedSegmentId === segment.segment_id ? 'highlighted' : ''
+                highlightedSegmentId === segment.id ? 'highlighted' : ''
               }`}
               onClick={() => handleSegmentClick(segment)}
             >
               <div className="segment-header">
                 <span className="speaker-label">
-                  {segment.speaker === 'seller' ? '🎤 Seller' : '👤 Client'}
+                  {segment.speaker === 'agent' ? '🎤 Agent' : '👤 Client'}
                 </span>
                 <span className="timestamp">
                   {formatTime(segment.start_time)}
@@ -97,19 +105,13 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
               </div>
               
               <div className="segment-text">
-                {segment.transcript || '(No transcript)'}
+                {segment.text || '(No transcript)'}
               </div>
 
-              {segment.emotions && segment.speaker === 'client' && (
+              {segment.speaker === 'client' && (
                 <div className="segment-emotions">
-                  <span className="emotion-badge enthusiasm">
-                    😊 {segment.emotions.enthusiasm.toFixed(1)}
-                  </span>
-                  <span className="emotion-badge agreement">
-                    👍 {segment.emotions.agreement.toFixed(1)}
-                  </span>
-                  <span className="emotion-badge stress">
-                    😰 {segment.emotions.stress.toFixed(1)}
+                  <span className="emotion-badge">
+                    {segment.emotion} ({segment.confidence.toFixed(2)})
                   </span>
                 </div>
               )}

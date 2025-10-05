@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 const LiveMonitoring: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
-  const [transcript, setTranscript] = useState<string[]>([]);
-  const [sentiment, setSentiment] = useState('neutral');
+  const [transcript] = useState<string[]>([]);
+  const [sentiment] = useState('neutral');
 
   const startRecording = () => {
     setIsRecording(true);

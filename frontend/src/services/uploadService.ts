@@ -30,8 +30,8 @@ export async function uploadChunked(options: UploadOptions): Promise<UploadResul
     const initResponse = await analysisAPI.initUpload({
       user_id: userId,
       filename: file.name,
-      file_size: file.size,
-      content_type: file.type,
+      total_size_bytes: file.size,
+      metadata: { content_type: file.type },
     });
 
     const { upload_id, chunk_size } = initResponse;
@@ -48,9 +48,9 @@ export async function uploadChunked(options: UploadOptions): Promise<UploadResul
 
       // Upload chunk
       await analysisAPI.uploadChunk(upload_id, {
-        chunk_index: chunkIndex,
+        chunk_number: chunkIndex,
         chunk_data: base64Chunk,
-        is_final: chunkIndex === totalChunks - 1,
+        is_last: chunkIndex === totalChunks - 1,
       });
 
       // Report progress

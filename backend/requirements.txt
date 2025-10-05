@@ -11,6 +11,7 @@ websockets==12.0
 # Settings Management
 pydantic==2.5.3
 pydantic-settings==2.1.0
+pydantic[email]==2.5.3
 python-dotenv==1.0.0
 
 # ML & Audio Processing (per spec: scikit-learn + Vosk)
