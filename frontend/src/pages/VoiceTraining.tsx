@@ -1,86 +1,87 @@
-import React, { useState } from 'react';
 import {
-  Container,
-  Paper,
-  Typography,
+  Alert,
   Box,
   Button,
+  Container,
   LinearProgress,
-  Alert,
-  Stepper,
+  Paper,
   Step,
   StepLabel,
-} from '@mui/material';
-import { useParams, useNavigate } from 'react-router-dom';
-import { VoiceRecorder } from '../components/VoiceRecorder';
-import api from '../services/apiClient';
+  Stepper,
+  Typography,
+} from "@mui/material"
+import React, { useState } from "react"
+import { useNavigate, useParams } from "react-router-dom"
+import { VoiceRecorder } from "../components/VoiceRecorder"
+import api from "../services/apiClient"
 
 const TRAINING_PHRASES = [
-  'Hello, how are you today?',
-  'I would like to discuss our product offerings.',
-  'Can you tell me more about your needs?',
-  'Let me explain the pricing structure.',
-  'Thank you for your time and interest.',
-  'I appreciate your feedback on this matter.',
-  'We can schedule a follow-up call next week.',
-  'Is there anything else I can help you with?',
-];
+  "Hello, how are you today?",
+  "I would like to discuss our product offerings.",
+  "Can you tell me more about your needs?",
+  "Let me explain the pricing structure.",
+  "Thank you for your time and interest.",
+  "I appreciate your feedback on this matter.",
+  "We can schedule a follow-up call next week.",
+  "Is there anything else I can help you with?",
+]
 
 const VoiceTraining: React.FC = () => {
-  const { userId } = useParams<{ userId: string }>();
-  const navigate = useNavigate();
-  const [currentPhrase, setCurrentPhrase] = useState(0);
-  const [recordings, setRecordings] = useState<Blob[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { userId } = useParams<{ userId: string }>()
+  const navigate = useNavigate()
+  const [currentPhrase, setCurrentPhrase] = useState(0)
+  const [recordings, setRecordings] = useState<Blob[]>([])
+  const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleRecordingComplete = (blob: Blob) => {
-    setRecordings([...recordings, blob]);
-    
+    setRecordings([...recordings, blob])
+
     if (currentPhrase < TRAINING_PHRASES.length - 1) {
-      setCurrentPhrase(currentPhrase + 1);
+      setCurrentPhrase(currentPhrase + 1)
     }
-  };
+  }
 
   const handleRetake = () => {
-    const newRecordings = [...recordings];
-    newRecordings.pop();
-    setRecordings(newRecordings);
+    const newRecordings = [...recordings]
+    newRecordings.pop()
+    setRecordings(newRecordings)
     if (currentPhrase > 0) {
-      setCurrentPhrase(currentPhrase - 1);
+      setCurrentPhrase(currentPhrase - 1)
     }
-  };
+  }
 
   const handleSubmit = async () => {
     if (recordings.length !== TRAINING_PHRASES.length) {
-      setError('Please complete all voice training recordings');
-      return;
+      setError("Please complete all voice training recordings")
+      return
     }
 
-    setIsSubmitting(true);
-    setError(null);
+    setIsSubmitting(true)
+    setError(null)
 
     try {
-      const formData = new FormData();
+      const formData = new FormData()
       recordings.forEach((blob, index) => {
-        formData.append(`recordings`, blob, `phrase_${index}.wav`);
-      });
+        formData.append(`recordings`, blob, `phrase_${index}.wav`)
+      })
 
       await api.post(`/api/v1/users/${userId}/train-voice`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+        headers: { "Content-Type": "multipart/form-data" },
+      })
 
-      navigate('/dashboard');
+      navigate("/dashboard")
     } catch (err: any) {
       setError(
-        err.response?.data?.detail || 'Failed to train voice model. Please try again.'
-      );
+        err.response?.data?.detail ||
+          "Failed to train voice model. Please try again."
+      )
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
-  const progress = (recordings.length / TRAINING_PHRASES.length) * 100;
+  const progress = (recordings.length / TRAINING_PHRASES.length) * 100
 
   return (
     <Container maxWidth="md">
@@ -89,13 +90,29 @@ const VoiceTraining: React.FC = () => {
           <Typography variant="h4" component="h1" gutterBottom align="center">
             Voice Training
           </Typography>
-          <Typography variant="body1" color="text.secondary" align="center" sx={{ mb: 4 }}>
-            Record yourself reading each phrase to train the speaker identification system
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            align="center"
+            sx={{ mb: 4 }}
+          >
+            Record yourself reading each phrase to train the speaker
+            identification system
           </Typography>
 
-          <LinearProgress variant="determinate" value={progress} sx={{ mb: 3 }} />
-          <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 4 }}>
-            Progress: {recordings.length} of {TRAINING_PHRASES.length} phrases completed
+          <LinearProgress
+            variant="determinate"
+            value={progress}
+            sx={{ mb: 3 }}
+          />
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            align="center"
+            sx={{ mb: 4 }}
+          >
+            Progress: {recordings.length} of {TRAINING_PHRASES.length} phrases
+            completed
           </Typography>
 
           {error && (
@@ -119,14 +136,18 @@ const VoiceTraining: React.FC = () => {
                 sx={{
                   p: 3,
                   mb: 3,
-                  bgcolor: 'primary.light',
-                  color: 'primary.contrastText',
+                  bgcolor: "primary.light",
+                  color: "primary.contrastText",
                 }}
               >
                 <Typography variant="h6" align="center">
                   Phrase {currentPhrase + 1}:
                 </Typography>
-                <Typography variant="h5" align="center" sx={{ mt: 1, fontWeight: 'bold' }}>
+                <Typography
+                  variant="h5"
+                  align="center"
+                  sx={{ mt: 1, fontWeight: "bold" }}
+                >
                   "{TRAINING_PHRASES[currentPhrase]}"
                 </Typography>
               </Paper>
@@ -138,7 +159,7 @@ const VoiceTraining: React.FC = () => {
               />
 
               {recordings.length > 0 && (
-                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+                <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
                   <Button variant="outlined" onClick={handleRetake}>
                     Re-record Previous Phrase
                   </Button>
@@ -146,9 +167,10 @@ const VoiceTraining: React.FC = () => {
               )}
             </Box>
           ) : (
-            <Box sx={{ textAlign: 'center' }}>
+            <Box sx={{ textAlign: "center" }}>
               <Alert severity="success" sx={{ mb: 3 }}>
-                All phrases recorded successfully! You can now submit your voice training.
+                All phrases recorded successfully! You can now submit your voice
+                training.
               </Alert>
               <Button
                 variant="contained"
@@ -156,14 +178,14 @@ const VoiceTraining: React.FC = () => {
                 onClick={handleSubmit}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Training Voice Model...' : 'Complete Training'}
+                {isSubmitting ? "Training Voice Model..." : "Complete Training"}
               </Button>
             </Box>
           )}
         </Paper>
       </Box>
     </Container>
-  );
-};
+  )
+}
 
-export default VoiceTraining;
+export default VoiceTraining

@@ -1,19 +1,19 @@
-import React, { useState } from "react"
+import { Refresh as RefreshIcon } from "@mui/icons-material"
 import {
+  Box,
+  Button,
+  CircularProgress,
   Container,
   Grid,
   Paper,
   Typography,
-  Box,
-  Button,
-  CircularProgress,
 } from "@mui/material"
-import { Refresh as RefreshIcon } from "@mui/icons-material"
-import { AudioUploader } from "../components/AudioUploader"
-import MetricsCard from "../components/MetricsCard"
-import { EmotionChart } from "../components/EmotionChart"
-import { TranscriptView } from "../components/TranscriptView"
+import React, { useState } from "react"
 import AlertPopup from "../components/AlertPopup"
+import { AudioUploader } from "../components/AudioUploader"
+import { EmotionChart } from "../components/EmotionChart"
+import MetricsCard from "../components/MetricsCard"
+import { TranscriptView } from "../components/TranscriptView"
 import { useWebSocket } from "../hooks/useWebSocket"
 
 interface AnalysisState {

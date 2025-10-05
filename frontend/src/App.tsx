@@ -1,16 +1,16 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import './App.css';
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom"
+import "./App.css"
 
 // Pages (to be created)
-import Dashboard from './pages/Dashboard';
-import LiveMonitoring from './pages/LiveMonitoring';
-import CallHistory from './pages/CallHistory';
-import CallDetails from './pages/CallDetails';
-import Analytics from './pages/Analytics';
-import Settings from './pages/Settings';
+import Analytics from "./pages/Analytics"
+import CallDetails from "./pages/CallDetails"
+import CallHistory from "./pages/CallHistory"
+import Dashboard from "./pages/Dashboard"
+import LiveMonitoring from "./pages/LiveMonitoring"
+import Settings from "./pages/Settings"
 
 // Layout components
-import Navigation from './components/Navigation';
+import Navigation from "./components/Navigation"
 
 function App() {
   return (
@@ -29,7 +29,7 @@ function App() {
         </main>
       </div>
     </Router>
-  );
+  )
 }
 
-export default App;
+export default App

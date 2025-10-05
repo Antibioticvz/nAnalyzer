@@ -2,22 +2,22 @@
  * TranscriptView component
  * Displays call transcript with speaker labels and emotion highlighting
  */
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from "react"
 
 interface TranscriptSegment {
-  id: string;
-  text: string;
-  speaker: string;
-  start_time: number;
-  end_time: number;
-  emotion: string;
-  confidence: number;
+  id: string
+  text: string
+  speaker: string
+  start_time: number
+  end_time: number
+  emotion: string
+  confidence: number
 }
 
 interface TranscriptViewProps {
-  segments: TranscriptSegment[];
-  onSegmentClick?: (segment: TranscriptSegment) => void;
-  highlightedSegmentId?: string;
+  segments: TranscriptSegment[]
+  onSegmentClick?: (segment: TranscriptSegment) => void
+  highlightedSegmentId?: string
 }
 
 export const TranscriptView: React.FC<TranscriptViewProps> = ({
@@ -25,42 +25,42 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
   onSegmentClick,
   highlightedSegmentId,
 }) => {
-  const [selectedSegment, setSelectedSegment] = useState<string | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [selectedSegment, setSelectedSegment] = useState<string | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (highlightedSegmentId !== undefined) {
       // Scroll to highlighted segment
-      const element = document.getElementById(`segment-${highlightedSegmentId}`);
+      const element = document.getElementById(`segment-${highlightedSegmentId}`)
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.scrollIntoView({ behavior: "smooth", block: "center" })
       }
     }
-  }, [highlightedSegmentId]);
+  }, [highlightedSegmentId])
 
   const handleSegmentClick = (segment: TranscriptSegment) => {
-    setSelectedSegment(segment.id);
-    onSegmentClick?.(segment);
-  };
+    setSelectedSegment(segment.id)
+    onSegmentClick?.(segment)
+  }
 
   const getEmotionColor = (emotion: string) => {
     const colors: Record<string, string> = {
-      positive: 'positive',
-      negative: 'negative',
-      neutral: 'neutral',
-      anger: 'negative',
-      joy: 'positive',
-      sadness: 'negative',
-      surprise: 'neutral',
-    };
-    return colors[emotion] || 'neutral';
-  };
+      positive: "positive",
+      negative: "negative",
+      neutral: "neutral",
+      anger: "negative",
+      joy: "positive",
+      sadness: "negative",
+      surprise: "neutral",
+    }
+    return colors[emotion] || "neutral"
+  }
 
   const formatTime = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${minutes}:${secs.toString().padStart(2, '0')}`;
-  };
+    const minutes = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${minutes}:${secs.toString().padStart(2, "0")}`
+  }
 
   return (
     <div className="transcript-view" ref={containerRef}>
@@ -82,33 +82,31 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
         {segments.length === 0 ? (
           <p className="empty-state">No transcript available yet.</p>
         ) : (
-          segments.map((segment) => (
+          segments.map(segment => (
             <div
               key={segment.id}
               id={`segment-${segment.id}`}
-              className={`transcript-segment ${segment.speaker} ${
-                getEmotionColor(segment.emotion)
-              } ${
-                selectedSegment === segment.id ? 'selected' : ''
-              } ${
-                highlightedSegmentId === segment.id ? 'highlighted' : ''
+              className={`transcript-segment ${segment.speaker} ${getEmotionColor(
+                segment.emotion
+              )} ${selectedSegment === segment.id ? "selected" : ""} ${
+                highlightedSegmentId === segment.id ? "highlighted" : ""
               }`}
               onClick={() => handleSegmentClick(segment)}
             >
               <div className="segment-header">
                 <span className="speaker-label">
-                  {segment.speaker === 'agent' ? '🎤 Agent' : '👤 Client'}
+                  {segment.speaker === "agent" ? "🎤 Agent" : "👤 Client"}
                 </span>
                 <span className="timestamp">
                   {formatTime(segment.start_time)}
                 </span>
               </div>
-              
+
               <div className="segment-text">
-                {segment.text || '(No transcript)'}
+                {segment.text || "(No transcript)"}
               </div>
 
-              {segment.speaker === 'client' && (
+              {segment.speaker === "client" && (
                 <div className="segment-emotions">
                   <span className="emotion-badge">
                     {segment.emotion} ({segment.confidence.toFixed(2)})
@@ -120,5 +118,5 @@ export const TranscriptView: React.FC<TranscriptViewProps> = ({
         )}
       </div>
     </div>
-  );
-};
+  )
+}
