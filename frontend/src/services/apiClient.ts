@@ -5,7 +5,10 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { APIError } from '../types/api';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+// Use environment variable with fallback
+// In production: set REACT_APP_API_BASE_URL or VITE_API_BASE_URL
+// In tests: defaults to localhost:8000
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
 
 class APIClient {
   private client: AxiosInstance;

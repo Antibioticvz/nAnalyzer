@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Application lifespan manager"""
     logger.info("Starting nAnalyzer backend...")
-    logger.info(f"Environment: {settings.APP_ENV}")
+    logger.info(f"Debug mode: {settings.DEBUG}")
     
     # Initialize ML models (async loading)
     # Commented out for now - will be implemented when ML modules are ready
