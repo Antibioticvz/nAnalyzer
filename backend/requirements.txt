@@ -1,0 +1,54 @@
+# Backend Requirements
+# nAnalyzer - Privacy-focused real-time sales call analysis
+
+# Web Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+websockets==12.0
+
+# Settings Management
+pydantic==2.5.3
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
+
+# ML & NLP
+torch==2.1.2
+transformers==4.36.2
+faster-whisper==0.10.0
+# Alternative STT: vosk==0.3.45
+sentencepiece==0.1.99
+sacremoses==0.1.1
+
+# Audio Processing
+numpy==1.26.3
+soundfile==0.12.1
+librosa==0.10.1
+pyaudio==0.2.14
+
+# Database
+sqlalchemy==2.0.25
+aiosqlite==0.19.0
+alembic==1.13.1
+
+# Security
+pyjwt==2.8.0
+cryptography==42.0.0
+bcrypt==4.1.2
+
+# Utilities
+python-json-logger==2.0.7
+aiofiles==23.2.1
+httpx==0.26.0
+
+# Development
+pytest==7.4.4
+pytest-asyncio==0.23.3
+pytest-cov==4.1.0
+black==24.1.1
+mypy==1.8.0
+flake8==7.0.0
+
+# Optional: Redis for message queue
+# redis==5.0.1
+# aioredis==2.0.1
