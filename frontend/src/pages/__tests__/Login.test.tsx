@@ -37,12 +37,12 @@ describe("Login", () => {
       </MemoryRouter>
     )
 
-    expect(screen.getByLabelText(/ID пользователя/i)).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: /Войти/i })).toBeInTheDocument()
-    expect(screen.getByText(/Нет аккаунта\?/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Email Address/i)).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /Sign In/i })).toBeInTheDocument()
+    expect(screen.getByText(/Don't have an account\?/i)).toBeInTheDocument()
   })
 
-  it("should show error for invalid user ID", async () => {
+  it("should show error for invalid email", async () => {
     // Mock localStorage
     const localStorageMock = {
       getItem: jest.fn().mockReturnValue(null),
@@ -64,14 +64,14 @@ describe("Login", () => {
       </MemoryRouter>
     )
 
-    const userIdInput = screen.getByLabelText(/ID пользователя/i)
-    const submitButton = screen.getByRole("button", { name: /Войти/i })
+    const emailInput = screen.getByLabelText(/Email Address/i)
+    const submitButton = screen.getByRole("button", { name: /Sign In/i })
 
-    fireEvent.change(userIdInput, { target: { value: "invalid-user" } })
+    fireEvent.change(emailInput, { target: { value: "invalid@example.com" } })
     fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/Пользователь не найден/i)).toBeInTheDocument()
+      expect(screen.getByText(/User not found/i)).toBeInTheDocument()
     })
   })
 
@@ -86,7 +86,7 @@ describe("Login", () => {
       created_at: "2025-01-01T00:00:00Z",
       updated_at: "2025-01-01T00:00:00Z",
     }
-    ;(apiClient.get as jest.Mock).mockResolvedValue({ data: mockUser })
+    ;(apiClient.post as jest.Mock).mockResolvedValue({ data: mockUser })
 
     render(
       <MemoryRouter
@@ -98,10 +98,10 @@ describe("Login", () => {
       </MemoryRouter>
     )
 
-    const userIdInput = screen.getByLabelText(/ID пользователя/i)
-    const submitButton = screen.getByRole("button", { name: /Войти/i })
+    const emailInput = screen.getByLabelText(/Email Address/i)
+    const submitButton = screen.getByRole("button", { name: /Sign In/i })
 
-    fireEvent.change(userIdInput, { target: { value: "test-user" } })
+    fireEvent.change(emailInput, { target: { value: "test@example.com" } })
     fireEvent.click(submitButton)
 
     await waitFor(() => {
@@ -109,7 +109,7 @@ describe("Login", () => {
     })
   })
 
-  it("should disable submit button when userId is empty", () => {
+  it("should disable submit button when email is empty", () => {
     render(
       <MemoryRouter
         future={{ v7_relativeSplatPath: true, v7_startTransition: true }}
@@ -120,11 +120,11 @@ describe("Login", () => {
       </MemoryRouter>
     )
 
-    const submitButton = screen.getByRole("button", { name: /Войти/i })
+    const submitButton = screen.getByRole("button", { name: /Sign In/i })
     expect(submitButton).toBeDisabled()
   })
 
-  it("should enable submit button when userId is entered", () => {
+  it("should enable submit button when email is entered", () => {
     render(
       <MemoryRouter
         future={{ v7_relativeSplatPath: true, v7_startTransition: true }}
@@ -135,10 +135,10 @@ describe("Login", () => {
       </MemoryRouter>
     )
 
-    const userIdInput = screen.getByLabelText(/ID пользователя/i)
-    const submitButton = screen.getByRole("button", { name: /Войти/i })
+    const emailInput = screen.getByLabelText(/Email Address/i)
+    const submitButton = screen.getByRole("button", { name: /Sign In/i })
 
-    fireEvent.change(userIdInput, { target: { value: "test-user" } })
+    fireEvent.change(emailInput, { target: { value: "test@example.com" } })
     expect(submitButton).not.toBeDisabled()
   })
 })

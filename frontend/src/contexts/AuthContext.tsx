@@ -72,16 +72,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth()
   }, [])
 
-  const login = async (userId: string) => {
+  const login = async (email: string) => {
     setIsLoading(true)
     try {
-      apiClient.setUserId(userId)
-      const response = await apiClient.get(`/api/v1/users/${userId}`)
-      setUser(response.data)
-      setUserIdState(userId)
-      localStorage.setItem("userId", userId)
+      const response = await apiClient.post("/api/v1/users/login", { email })
+      const userData = response.data
+      setUser(userData)
+      setUserIdState(userData.user_id)
+      apiClient.setUserId(userData.user_id)
+      localStorage.setItem("userId", userData.user_id)
     } catch (error) {
-      apiClient.setUserId("")
       throw error
     } finally {
       setIsLoading(false)

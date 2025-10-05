@@ -14,6 +14,25 @@ class UserRegisterRequest(BaseModel):
     metadata: Optional[dict] = None
 
 
+class UserLoginRequest(BaseModel):
+    email: EmailStr
+
+
+class UserLoginResponse(BaseModel):
+    user_id: str
+    name: str
+    email: EmailStr
+    role: str
+    voice_trained: bool
+    model_path: Optional[str] = None
+    gmm_threshold: Optional[float] = None
+    audio_retention_days: int
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class UserResponse(BaseModel):
     user_id: str
     name: str

@@ -16,7 +16,7 @@ const Login: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { login } = useAuth()
-  const [userId, setUserId] = useState("")
+  const [email, setEmail] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -28,12 +28,12 @@ const Login: React.FC = () => {
     setLoading(true)
 
     try {
-      await login(userId)
+      await login(email)
       navigate(from, { replace: true })
     } catch (err: any) {
       setError(
         err.response?.data?.detail?.message ||
-          "Пользователь не найден. Проверьте ID или зарегистрируйтесь."
+          "User not found. Please check your email or register."
       )
     } finally {
       setLoading(false)
@@ -45,7 +45,7 @@ const Login: React.FC = () => {
       <Box sx={{ mt: 8, mb: 4 }}>
         <Paper sx={{ p: 4 }}>
           <Typography variant="h4" gutterBottom align="center">
-            Вход в nAnalyzer
+            Login to nAnalyzer
           </Typography>
           <Typography
             variant="body1"
@@ -53,7 +53,7 @@ const Login: React.FC = () => {
             align="center"
             sx={{ mb: 3 }}
           >
-            Введите ваш ID пользователя для входа
+            Enter your email address to sign in
           </Typography>
 
           {error && (
@@ -64,14 +64,15 @@ const Login: React.FC = () => {
 
           <Box component="form" onSubmit={handleSubmit}>
             <TextField
-              label="ID пользователя"
-              value={userId}
-              onChange={e => setUserId(e.target.value)}
+              label="Email Address"
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
               fullWidth
               required
-              placeholder="user_1f61bd63f82f4656"
+              placeholder="user@example.com"
               sx={{ mb: 3 }}
-              helperText="ID был предоставлен при регистрации"
+              helperText="Enter the email you used during registration"
             />
 
             <Button
@@ -79,22 +80,22 @@ const Login: React.FC = () => {
               variant="contained"
               fullWidth
               size="large"
-              disabled={loading || !userId.trim()}
+              disabled={loading || !email.trim()}
               sx={{ mb: 2 }}
             >
-              {loading ? "Вход..." : "Войти"}
+              {loading ? "Signing in..." : "Sign In"}
             </Button>
           </Box>
 
           <Box sx={{ textAlign: "center", mt: 3 }}>
             <Typography variant="body2" color="text.secondary">
-              Нет аккаунта?{" "}
+              Don't have an account?{" "}
               <MuiLink
                 component={Link}
                 to="/register"
                 sx={{ textDecoration: "none" }}
               >
-                Зарегистрироваться
+                Register
               </MuiLink>
             </Typography>
           </Box>

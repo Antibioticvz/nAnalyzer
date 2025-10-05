@@ -30,7 +30,7 @@ const TestComponent: React.FC = () => {
 
   const handleLogin = async () => {
     try {
-      await login("test-user")
+      await login("test@example.com")
     } catch (error) {
       // Handle login error
     }
@@ -120,7 +120,7 @@ describe("AuthContext", () => {
       updated_at: "2025-01-01T00:00:00Z",
     }
 
-    ;(apiClient.get as jest.Mock).mockResolvedValue({ data: mockUser })
+    ;(apiClient.post as jest.Mock).mockResolvedValue({ data: mockUser })
 
     render(
       <AuthProvider>
@@ -141,10 +141,15 @@ describe("AuthContext", () => {
     expect(screen.getByTestId("isAuthenticated")).toHaveTextContent("true")
 
     expect(localStorageMock.setItem).toHaveBeenCalledWith("userId", "test-user")
+    expect(apiClient.post).toHaveBeenCalledWith("/api/v1/users/login", {
+      email: "test@example.com",
+    })
   })
 
   it("should handle login failure", async () => {
-    ;(apiClient.get as jest.Mock).mockRejectedValue(new Error("User not found"))
+    ;(apiClient.post as jest.Mock).mockRejectedValue(
+      new Error("User not found")
+    )
 
     render(
       <AuthProvider>
@@ -183,7 +188,7 @@ describe("AuthContext", () => {
       updated_at: "2025-01-01T00:00:00Z",
     }
 
-    ;(apiClient.get as jest.Mock).mockResolvedValue({ data: mockUser })
+    ;(apiClient.post as jest.Mock).mockResolvedValue({ data: mockUser })
 
     render(
       <AuthProvider>
