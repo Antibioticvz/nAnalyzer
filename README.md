@@ -109,26 +109,32 @@ Visit `http://localhost:3000` to access the dashboard.
 ## 🧩 Core Modules
 
 ### 1. Audio Capture
+
 Handles audio input from various sources (microphone, files, VoIP streams).
 
 **Features:**
+
 - Multi-format support (WAV, MP3, Opus)
 - WebRTC integration for live calls
 - Automatic audio normalization and preprocessing
 
 ### 2. Transcription Engine
+
 Converts speech to text using local ML models.
 
 **Features:**
+
 - Real-time streaming transcription
 - Word-level timestamps
 - Speaker diarization (multi-speaker detection)
 - Multiple language support
 
 ### 3. Analysis Engine
+
 Extracts insights from transcribed conversations.
 
 **Features:**
+
 - Sentiment analysis (positive/negative/neutral)
 - Keyword and topic extraction
 - Talk/listen ratio calculation
@@ -136,9 +142,11 @@ Extracts insights from transcribed conversations.
 - Question detection and counting
 
 ### 4. React Dashboard
+
 User-friendly interface for monitoring and analysis.
 
 **Features:**
+
 - Live call monitoring with waveform visualization
 - Real-time sentiment graphs
 - Historical analytics and trends
@@ -146,9 +154,11 @@ User-friendly interface for monitoring and analysis.
 - Searchable call archive
 
 ### 5. Data Storage
+
 Local-first storage with optional cloud sync.
 
 **Features:**
+
 - SQLite for lightweight local storage
 - Automatic data retention management
 - PII redaction capabilities
@@ -191,15 +201,15 @@ WEBSOCKET_PING_INTERVAL=30
 
 ## 📊 Performance Benchmarks
 
-| Metric | Target | Typical |
-|--------|--------|---------|
-| Audio Capture Latency | <50ms | ~30ms |
-| Transcription Delay | <1s | ~500ms |
-| Analysis Update | 5-10s | ~7s |
-| End-to-End Latency | <2s | ~1.2s |
-| Memory Usage (idle) | <2GB | ~1.5GB |
-| Memory Usage (active) | <4GB | ~3GB |
-| CPU Usage (idle) | <50% (1 core) | ~30% |
+| Metric                | Target        | Typical |
+| --------------------- | ------------- | ------- |
+| Audio Capture Latency | <50ms         | ~30ms   |
+| Transcription Delay   | <1s           | ~500ms  |
+| Analysis Update       | 5-10s         | ~7s     |
+| End-to-End Latency    | <2s           | ~1.2s   |
+| Memory Usage (idle)   | <2GB          | ~1.5GB  |
+| Memory Usage (active) | <4GB          | ~3GB    |
+| CPU Usage (idle)      | <50% (1 core) | ~30%    |
 
 ## 🛠️ Development
 
@@ -285,24 +295,28 @@ For detailed security information, see [SECURITY.md](SECURITY.md).
 ## 🗺️ Roadmap
 
 ### Phase 1: Core Functionality (Current)
+
 - ✅ Local audio processing
 - ✅ Real-time transcription
 - ✅ Basic sentiment analysis
 - ✅ React dashboard MVP
 
 ### Phase 2: Enhanced Analysis
+
 - 📋 Advanced NLP (topic modeling, entity recognition)
 - 📋 Custom keyword libraries
 - 📋 Multi-language support
 - 📋 Speaker diarization improvements
 
 ### Phase 3: Telephony Integration
+
 - 📋 WebRTC plugin
 - 📋 Twilio integration
 - 📋 Vonage integration
 - 📋 SIP protocol support
 
 ### Phase 4: Advanced Features
+
 - 📋 Active learning and model improvement
 - 📋 Team collaboration features
 - 📋 Advanced analytics and reporting
@@ -340,7 +354,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 💬 Support
 
 - 📧 Email: support@nanalyzer.dev
-- 💬 Discord: [Join our community](https://discord.gg/nanalyzer)
 - 🐛 Issues: [GitHub Issues](https://github.com/yourusername/nAnalyzer/issues)
 - 📖 Docs: [Full Documentation](https://docs.nanalyzer.dev)
 

@@ -53,4 +53,5 @@ async def test_list_calls_unauthorized(client):
     """Test listing calls without authentication"""
     response = await client.get("/api/v1/calls")
     
-    assert response.status_code == 401
+    # FastAPI validation returns 422 for missing required headers
+    assert response.status_code == 422

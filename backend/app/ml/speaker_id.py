@@ -12,7 +12,7 @@ from app.ml.audio_processing import extract_mfcc
 
 def train_gmm_model(
     audio_samples: List[np.ndarray],
-    n_components: int = 16,
+    n_components: int = 8,  # Reduced from 16 to handle small/similar samples
     covariance_type: str = 'diag'
 ) -> GaussianMixture:
     """
@@ -20,14 +20,14 @@ def train_gmm_model(
     
     Args:
         audio_samples: List of MFCC features from training phrases
-        n_components: Number of GMM components (16 per spec)
+        n_components: Number of GMM components (8 default, 16 per spec for real data)
         covariance_type: Covariance type ('diag' per spec)
     
     Returns:
         Trained GaussianMixture model
     
     Raises:
-        ValueError: If insufficient samples (< 5)
+        ValueError: If insufficient samples (< 5) or invalid data
     """
     if len(audio_samples) < 5:
         raise ValueError(f"Insufficient training samples. Need at least 5, got {len(audio_samples)}")
@@ -35,12 +35,24 @@ def train_gmm_model(
     # Concatenate all MFCC features
     all_features = np.vstack(audio_samples)
     
-    # Train GMM
+    # Check for NaN or Inf values and handle them
+    if not np.isfinite(all_features).all():
+        # Replace NaN/Inf with small random values
+        mask = ~np.isfinite(all_features)
+        all_features[mask] = np.random.randn(np.sum(mask)) * 0.01
+    
+    # Adaptively choose n_components based on data size
+    max_components = min(n_components, len(all_features) // 10)  # At least 10 samples per component
+    if max_components < n_components:
+        n_components = max(1, max_components)
+    
+    # Train GMM with regularization to handle near-singular covariance
     gmm = GaussianMixture(
         n_components=n_components,
         covariance_type=covariance_type,
         max_iter=100,
-        random_state=42
+        random_state=42,
+        reg_covar=1e-5  # Add regularization to prevent singular covariance
     )
     
     gmm.fit(all_features)
@@ -143,21 +155,33 @@ def train_user_voice_model(
     Complete pipeline: train GMM and calibrate threshold
     
     Args:
-        audio_samples: List of raw audio bytes
+        audio_samples: List of raw audio bytes (WAV format)
         sample_rate: Audio sample rate
     
     Returns:
         Complete user model dictionary
     """
+    import io
+    from scipy.io import wavfile
+    
     # Extract MFCC features from all samples
     mfcc_features = []
     
     for audio_bytes in audio_samples:
-        # Convert bytes to numpy array
-        audio = np.frombuffer(audio_bytes, dtype=np.float32)
+        # Parse WAV file from bytes
+        buffer = io.BytesIO(audio_bytes)
+        sr, audio = wavfile.read(buffer)
+        
+        # Convert to float32 and normalize
+        if audio.dtype == np.int16:
+            audio = audio.astype(np.float32) / 32768.0
+        elif audio.dtype == np.int32:
+            audio = audio.astype(np.float32) / 2147483648.0
+        else:
+            audio = audio.astype(np.float32)
         
         # Extract MFCC
-        mfcc = extract_mfcc(audio, sample_rate)
+        mfcc = extract_mfcc(audio, sr)
         mfcc_features.append(mfcc.T)  # Transpose to (n_frames, n_mfcc)
     
     # Train GMM

@@ -52,4 +52,6 @@ async def test_get_call_not_found(client):
     
     assert response.status_code == 404
     data = response.json()
-    assert "error" in data
+    # API returns {"detail": {"error": "...", "message": "..."}}
+    assert "detail" in data
+    assert data["detail"]["error"] == "NotFound"

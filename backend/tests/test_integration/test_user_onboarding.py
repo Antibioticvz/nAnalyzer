@@ -6,10 +6,46 @@ Must fail until full user flow is implemented
 import pytest
 import base64
 import os
+import numpy as np
+import io
+from scipy.io import wavfile
+
+
+@pytest.fixture
+def valid_audio_generator():
+    """Generate unique valid audio data for ML processing"""
+    import numpy as np
+    import io
+    from scipy.io import wavfile
+    
+    def generate(seed=None):
+        if seed is not None:
+            np.random.seed(seed)
+        
+        # Create 1 second of audio at 16kHz sample rate
+        sample_rate = 16000
+        duration = 1.0
+        samples = int(sample_rate * duration)
+        
+        # Generate different audio each time
+        t = np.linspace(0, duration, samples)
+        freq = 300 + np.random.random() * 300
+        audio_data = np.sin(2 * np.pi * freq * t)
+        audio_data += np.random.randn(samples) * 0.05
+        audio_data = audio_data / np.max(np.abs(audio_data)) * 0.9
+        audio_data = (audio_data * 32767).astype(np.int16)
+        
+        buffer = io.BytesIO()
+        wavfile.write(buffer, sample_rate, audio_data)
+        wav_data = buffer.getvalue()
+        
+        return base64.b64encode(wav_data).decode()
+    
+    return generate
 
 
 @pytest.mark.asyncio
-async def test_complete_user_onboarding_flow(client):
+async def test_complete_user_onboarding_flow(client, valid_audio_generator):
     """Test full user onboarding from registration to trained voice model"""
     # Step 1: Register user
     reg_response = await client.post(
@@ -36,10 +72,7 @@ async def test_complete_user_onboarding_flow(client):
     assert user_data["voice_trained"] is False
     assert user_data["gmm_threshold"] is None
     
-    # Step 3: Train voice with 8 samples
-    # Generate mock audio samples
-    sample_audio = base64.b64encode(b"WAV" + b"\x00" * 1000).decode()
-    
+    # Step 3: Train voice with 8 unique samples
     train_response = await client.post(
     f"/api/v1/users/{user_id}/train-voice",
     headers={"X-User-ID": user_id},
@@ -47,8 +80,8 @@ async def test_complete_user_onboarding_flow(client):
         "audio_samples": [
             {
                 "phrase_number": i,
-                "audio_base64": sample_audio,
-                "duration": 12.5
+                "audio_base64": valid_audio_generator(seed=i),
+                "duration": 1.0
             }
             for i in range(1, 9)
         ]

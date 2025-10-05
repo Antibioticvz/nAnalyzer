@@ -44,7 +44,8 @@ async def test_update_settings_invalid_retention(client):
     json={"audio_retention_days": 100}
     )
     
-    assert response.status_code == 400
+    # FastAPI Pydantic validation returns 422 for invalid values
+    assert response.status_code == 422
 
 
 @pytest.mark.asyncio

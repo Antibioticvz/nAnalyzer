@@ -56,7 +56,8 @@ async def test_submit_feedback_invalid_scores(client):
     }
     )
     
-    assert response.status_code == 400
+    # FastAPI Pydantic validation returns 422 for constraint violations
+    assert response.status_code == 422
 
 
 @pytest.mark.asyncio
