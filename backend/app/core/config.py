@@ -1,55 +1,56 @@
 """
-Application configuration using Pydantic settings
+Application configuration using Pydantic Settings
 """
 from pydantic_settings import BaseSettings
-from typing import List
-import os
+from pydantic import Field
+from typing import Optional
 
 
 class Settings(BaseSettings):
-    """Application settings"""
-    
     # Application
-    APP_ENV: str = "development"
+    APP_NAME: str = "nAnalyzer"
+    APP_VERSION: str = "1.0.0"
     DEBUG: bool = True
+    
+    # Server
+    HOST: str = "0.0.0.0"
+    PORT: int = 8000
+    
+    # Database
+    DATABASE_URL: str = Field(
+        default="sqlite+aiosqlite:///./data/nanalyzer.db",
+        env="DATABASE_URL"
+    )
+    
+    # File Storage
+    UPLOAD_DIR: str = "./data/uploads"
+    AUDIO_DIR: str = "./data/audio"
+    MODELS_DIR: str = "./models"
+    
+    # ML Models
+    VOSK_MODEL_RU: str = "./models/vosk/vosk-model-small-ru-0.22"
+    VOSK_MODEL_EN: str = "./models/vosk/vosk-model-small-en-us-0.15"
+    
+    # Audio Processing
+    SAMPLE_RATE: int = 16000
+    CHUNK_SIZE_MB: int = 1
+    MAX_AUDIO_SIZE_MB: int = 100
+    
+    # Performance
+    MAX_CONCURRENT_UPLOADS: int = 5
+    PROCESSING_TIMEOUT_SECONDS: int = 600
+    
+    # Cleanup
+    DEFAULT_RETENTION_DAYS: int = 7
+    CLEANUP_SCHEDULE_HOUR: int = 2
+    
+    # Logging
     LOG_LEVEL: str = "INFO"
-    
-    # Model Settings
-    STT_MODEL: str = "whisper-base"
-    SENTIMENT_MODEL: str = "distilbert-base-uncased-finetuned-sst-2-english"
-    MAX_MODEL_MEMORY_MB: int = 2048
-    MODEL_CACHE_DIR: str = "./models"
-    
-    # Performance Settings
-    AUDIO_CHUNK_SIZE_MS: int = 200
-    TRANSCRIPTION_BUFFER_SIZE: int = 5
-    MAX_CONCURRENT_CALLS: int = 10
-    
-    # Privacy Settings
-    AUTO_DELETE_AUDIO_DAYS: int = 7
-    ENABLE_PII_REDACTION: bool = True
-    REDACTION_PATTERNS: str = "phone,ssn,credit_card"
-    
-    # Storage Settings
-    DATABASE_URL: str = "sqlite:///./data/nanalyzer.db"
-    AUDIO_STORAGE_PATH: str = "./data/audio"
-    BACKUP_ENABLED: bool = False
-    
-    # API Settings
-    FRONTEND_URL: str = "http://localhost:3000"
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:3001"]
-    WEBSOCKET_PING_INTERVAL: int = 30
-    API_RATE_LIMIT: int = 100  # requests per minute
-    
-    # Security
-    JWT_SECRET_KEY: str = "change-this-in-production"
-    JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    LOG_FILE: Optional[str] = "./logs/app.log"
     
     class Config:
         env_file = ".env"
         case_sensitive = True
 
 
-# Global settings instance
 settings = Settings()
