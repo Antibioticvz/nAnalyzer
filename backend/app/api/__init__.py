@@ -2,11 +2,12 @@
 API router configuration
 """
 from fastapi import APIRouter
-from app.api import calls, analysis, config, upload
+from app.api import calls, analysis, config, upload, users
 
 router = APIRouter()
 
 # Include sub-routers
+router.include_router(users.router, prefix="/users", tags=["users"])
 router.include_router(calls.router, prefix="/calls", tags=["calls"])
 router.include_router(analysis.router, prefix="/analysis", tags=["analysis"])
 router.include_router(config.router, prefix="/config", tags=["config"])

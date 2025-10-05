@@ -2,18 +2,22 @@
 Pytest configuration and fixtures for backend tests
 """
 import pytest
+import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.pool import StaticPool
 from app.main import app
 from app.core.database import Base, get_db
 
+# Import all models to register them with Base
+from app.models import User, Call, Segment, Alert, EmotionFeedback
+
 
 # Test database URL
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_db():
     """Create a test database"""
     engine = create_async_engine(
@@ -44,7 +48,7 @@ async def test_db():
     app.dependency_overrides.clear()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def client(test_db):
     """Create an async HTTP client for testing"""
     transport = ASGITransport(app=app)

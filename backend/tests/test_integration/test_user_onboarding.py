@@ -11,14 +11,14 @@ import os
 @pytest.mark.asyncio
 async def test_complete_user_onboarding_flow(client):
     """Test full user onboarding from registration to trained voice model"""
-            # Step 1: Register user
+    # Step 1: Register user
     reg_response = await client.post(
-            "/api/v1/users/register",
-            json={
-                "name": "Integration Test User",
-                "email": "integration@test.com",
-                "role": "seller"
-            }
+    "/api/v1/users/register",
+    json={
+        "name": "Integration Test User",
+        "email": "integration@test.com",
+        "role": "seller"
+    }
     )
     
     assert reg_response.status_code == 201
@@ -27,8 +27,8 @@ async def test_complete_user_onboarding_flow(client):
     
     # Step 2: Verify user exists and is not voice trained
     user_response = await client.get(
-            f"/api/v1/users/{user_id}",
-            headers={"X-User-ID": user_id}
+    f"/api/v1/users/{user_id}",
+    headers={"X-User-ID": user_id}
     )
     
     assert user_response.status_code == 200
@@ -41,18 +41,18 @@ async def test_complete_user_onboarding_flow(client):
     sample_audio = base64.b64encode(b"WAV" + b"\x00" * 1000).decode()
     
     train_response = await client.post(
-            f"/api/v1/users/{user_id}/train-voice",
-            headers={"X-User-ID": user_id},
-            json={
-                "audio_samples": [
-                    {
-                        "phrase_number": i,
-                        "audio_base64": sample_audio,
-                        "duration": 12.5
-                    }
-                    for i in range(1, 9)
-                ]
+    f"/api/v1/users/{user_id}/train-voice",
+    headers={"X-User-ID": user_id},
+    json={
+        "audio_samples": [
+            {
+                "phrase_number": i,
+                "audio_base64": sample_audio,
+                "duration": 12.5
             }
+            for i in range(1, 9)
+        ]
+    }
     )
     
     assert train_response.status_code == 200
@@ -64,8 +64,8 @@ async def test_complete_user_onboarding_flow(client):
     
     # Step 4: Verify user is now voice trained
     final_user_response = await client.get(
-            f"/api/v1/users/{user_id}",
-            headers={"X-User-ID": user_id}
+    f"/api/v1/users/{user_id}",
+    headers={"X-User-ID": user_id}
     )
     
     assert final_user_response.status_code == 200
@@ -76,34 +76,34 @@ async def test_complete_user_onboarding_flow(client):
     
     # Step 5: Verify GMM model file exists
     if final_user_data["model_path"]:
-            # Model should be saved to filesystem
-            # In real implementation, check file exists
-            pass
+        # Model should be saved to filesystem
+        # In real implementation, check file exists
+        pass
 
 
 @pytest.mark.asyncio
 async def test_onboarding_with_settings_update(client):
     """Test onboarding flow with immediate settings update"""
-            # Register
+    # Register
     reg_response = await client.post(
-            "/api/v1/users/register",
-            json={"name": "Settings User", "email": "settings_onboard@test.com"}
+    "/api/v1/users/register",
+    json={"name": "Settings User", "email": "settings_onboard@test.com"}
     )
     user_id = reg_response.json()["user_id"]
     
     # Update retention settings immediately
     settings_response = await client.put(
-            f"/api/v1/users/{user_id}/settings",
-            headers={"X-User-ID": user_id},
-            json={"audio_retention_days": 30}
+    f"/api/v1/users/{user_id}/settings",
+    headers={"X-User-ID": user_id},
+    json={"audio_retention_days": 30}
     )
     
     assert settings_response.status_code == 200
     
     # Verify settings persisted
     user_response = await client.get(
-            f"/api/v1/users/{user_id}",
-            headers={"X-User-ID": user_id}
+    f"/api/v1/users/{user_id}",
+    headers={"X-User-ID": user_id}
     )
     
     assert user_response.json()["audio_retention_days"] == 30
@@ -112,18 +112,18 @@ async def test_onboarding_with_settings_update(client):
 @pytest.mark.asyncio
 async def test_onboarding_prevents_duplicate_email(client):
     """Test that duplicate email registration is prevented"""
-            email = "duplicate_onboard@test.com"
+    email = "duplicate_onboard@test.com"
     
     # First registration
     first_response = await client.post(
-            "/api/v1/users/register",
-            json={"name": "First User", "email": email}
+    "/api/v1/users/register",
+    json={"name": "First User", "email": email}
     )
     assert first_response.status_code == 201
     
     # Attempt duplicate registration
     second_response = await client.post(
-            "/api/v1/users/register",
-            json={"name": "Second User", "email": email}
+    "/api/v1/users/register",
+    json={"name": "Second User", "email": email}
     )
     assert second_response.status_code == 409

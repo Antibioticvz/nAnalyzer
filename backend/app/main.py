@@ -24,16 +24,17 @@ async def lifespan(app: FastAPI):
     logger.info(f"Environment: {settings.APP_ENV}")
     
     # Initialize ML models (async loading)
-    try:
-        from app.modules.transcription import transcription_engine
-        from app.modules.analysis import analysis_engine
-        
-        await transcription_engine.initialize()
-        await analysis_engine.initialize()
-        logger.info("ML models loaded successfully")
-    except Exception as e:
-        logger.error(f"Failed to load ML models: {e}")
-        raise
+    # Commented out for now - will be implemented when ML modules are ready
+    # try:
+    #     from app.modules.transcription import transcription_engine
+    #     from app.modules.analysis import analysis_engine
+    #     
+    #     await transcription_engine.initialize()
+    #     await analysis_engine.initialize()
+    #     logger.info("ML models loaded successfully")
+    # except Exception as e:
+    #     logger.error(f"Failed to load ML models: {e}")
+    #     raise
     
     yield
     

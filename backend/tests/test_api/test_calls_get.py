@@ -8,11 +8,11 @@ import pytest
 @pytest.mark.asyncio
 async def test_get_call_success(client):
     """Test retrieving call details"""
-            # TODO: In real test, create a completed call analysis first
+    # TODO: In real test, create a completed call analysis first
     # For now, testing the contract structure
     reg_response = await client.post(
-            "/api/v1/users/register",
-            json={"name": "Call User", "email": "call@test.com"}
+    "/api/v1/users/register",
+    json={"name": "Call User", "email": "call@test.com"}
     )
     user_id = reg_response.json()["user_id"]
     
@@ -20,7 +20,7 @@ async def test_get_call_success(client):
     call_id = "call_test_123"
     response = await client.get(
             f"/api/v1/calls/{call_id}",
-            headers={"X-User-ID": user_id}
+    headers={"X-User-ID": user_id}
     )
     
     # Will be 404 until we implement
@@ -39,15 +39,15 @@ async def test_get_call_success(client):
 @pytest.mark.asyncio
 async def test_get_call_not_found(client):
     """Test retrieving non-existent call"""
-            reg_response = await client.post(
-            "/api/v1/users/register",
-            json={"name": "Call User 2", "email": "call2@test.com"}
+    reg_response = await client.post(
+    "/api/v1/users/register",
+    json={"name": "Call User 2", "email": "call2@test.com"}
     )
     user_id = reg_response.json()["user_id"]
     
     response = await client.get(
-            "/api/v1/calls/nonexistent_call",
-            headers={"X-User-ID": user_id}
+    "/api/v1/calls/nonexistent_call",
+    headers={"X-User-ID": user_id}
     )
     
     assert response.status_code == 404

@@ -8,17 +8,17 @@ import pytest
 @pytest.mark.asyncio
 async def test_get_user_success(client):
     """Test retrieving existing user"""
-            # Create user
+    # Create user
     reg_response = await client.post(
-            "/api/v1/users/register",
-            json={"name": "Get Test User", "email": "gettest@test.com"}
+    "/api/v1/users/register",
+    json={"name": "Get Test User", "email": "gettest@test.com"}
     )
     user_id = reg_response.json()["user_id"]
     
     # Get user
     response = await client.get(
             f"/api/v1/users/{user_id}",
-            headers={"X-User-ID": user_id}
+    headers={"X-User-ID": user_id}
     )
     
     assert response.status_code == 200
@@ -34,9 +34,9 @@ async def test_get_user_success(client):
 @pytest.mark.asyncio
 async def test_get_user_not_found(client):
     """Test retrieving non-existent user"""
-            response = await client.get(
-            "/api/v1/users/nonexistent_id",
-            headers={"X-User-ID": "nonexistent_id"}
+    response = await client.get(
+    "/api/v1/users/nonexistent_id",
+    headers={"X-User-ID": "nonexistent_id"}
     )
     
     assert response.status_code == 404
@@ -47,6 +47,6 @@ async def test_get_user_not_found(client):
 @pytest.mark.asyncio
 async def test_get_user_missing_auth_header(client):
     """Test retrieving user without authentication header"""
-            response = await client.get("/api/v1/users/some_id")
+    response = await client.get("/api/v1/users/some_id")
     
     assert response.status_code == 401

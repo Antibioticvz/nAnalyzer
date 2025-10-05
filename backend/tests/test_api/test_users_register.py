@@ -8,12 +8,12 @@ import pytest
 @pytest.mark.asyncio
 async def test_register_user_success(client):
     """Test successful user registration"""
-            response = await client.post(
-            "/api/v1/users/register",
-            json={
-                "name": "Alice Johnson",
-                "email": "alice@company.com",
-                "role": "seller"
+    response = await client.post(
+    "/api/v1/users/register",
+    json={
+        "name": "Alice Johnson",
+        "email": "alice@company.com",
+        "role": "seller"
             }
     )
     
@@ -30,11 +30,11 @@ async def test_register_user_success(client):
 @pytest.mark.asyncio
 async def test_register_user_minimal_fields(client):
     """Test registration with only required fields"""
-            response = await client.post(
-            "/api/v1/users/register",
-            json={
-                "name": "Bob Smith",
-                "email": "bob@example.com"
+    response = await client.post(
+    "/api/v1/users/register",
+    json={
+        "name": "Bob Smith",
+        "email": "bob@example.com"
             }
     )
     
@@ -46,11 +46,11 @@ async def test_register_user_minimal_fields(client):
 @pytest.mark.asyncio
 async def test_register_user_invalid_email(client):
     """Test registration with invalid email format"""
-            response = await client.post(
-            "/api/v1/users/register",
-            json={
-                "name": "Invalid User",
-                "email": "not-an-email"
+    response = await client.post(
+    "/api/v1/users/register",
+    json={
+        "name": "Invalid User",
+        "email": "not-an-email"
             }
     )
     
@@ -63,10 +63,10 @@ async def test_register_user_invalid_email(client):
 @pytest.mark.asyncio
 async def test_register_user_missing_required_fields(client):
     """Test registration with missing required fields"""
-            response = await client.post(
-            "/api/v1/users/register",
-            json={
-                "name": "Only Name"
+    response = await client.post(
+    "/api/v1/users/register",
+    json={
+        "name": "Only Name"
             }
     )
     
@@ -76,21 +76,21 @@ async def test_register_user_missing_required_fields(client):
 @pytest.mark.asyncio
 async def test_register_user_duplicate_email(client):
     """Test registration with duplicate email"""
-            # First registration
+    # First registration
     await client.post(
-            "/api/v1/users/register",
-            json={
-                "name": "First User",
-                "email": "duplicate@test.com"
+    "/api/v1/users/register",
+    json={
+        "name": "First User",
+        "email": "duplicate@test.com"
             }
     )
     
     # Duplicate registration
     response = await client.post(
-            "/api/v1/users/register",
-            json={
-                "name": "Second User",
-                "email": "duplicate@test.com"
+    "/api/v1/users/register",
+    json={
+        "name": "Second User",
+        "email": "duplicate@test.com"
             }
     )
     
@@ -103,15 +103,15 @@ async def test_register_user_duplicate_email(client):
 @pytest.mark.asyncio
 async def test_register_user_with_metadata(client):
     """Test registration with optional metadata"""
-            response = await client.post(
-            "/api/v1/users/register",
-            json={
-                "name": "Charlie Brown",
-                "email": "charlie@company.com",
-                "metadata": {
+    response = await client.post(
+    "/api/v1/users/register",
+    json={
+        "name": "Charlie Brown",
+        "email": "charlie@company.com",
+        "metadata": {
                     "company": "ACME Corp",
                     "department": "Sales"
-                }
+        }
             }
     )
     

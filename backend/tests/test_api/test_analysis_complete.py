@@ -9,20 +9,20 @@ import base64
 @pytest.mark.asyncio
 async def test_complete_upload_success(client):
     """Test completing upload and triggering analysis"""
-            # Setup: create user, initialize upload, upload chunk
+    # Setup: create user, initialize upload, upload chunk
     reg_response = await client.post(
-            "/api/v1/users/register",
-            json={"name": "Complete User", "email": "complete@test.com"}
+    "/api/v1/users/register",
+    json={"name": "Complete User", "email": "complete@test.com"}
     )
     user_id = reg_response.json()["user_id"]
     
     init_response = await client.post(
-            "/api/v1/analysis/upload",
-            headers={"X-User-ID": user_id},
-            json={
-                "user_id": user_id,
-                "filename": "call.wav",
-                "total_size_bytes": 1048576
+    "/api/v1/analysis/upload",
+    headers={"X-User-ID": user_id},
+    json={
+        "user_id": user_id,
+        "filename": "call.wav",
+        "total_size_bytes": 1048576
             }
     )
     upload_id = init_response.json()["upload_id"]
@@ -31,18 +31,18 @@ async def test_complete_upload_success(client):
     chunk_data = base64.b64encode(b"audio" * 1000).decode()
     await client.post(
             f"/api/v1/analysis/upload/{upload_id}/chunk",
-            headers={"X-User-ID": user_id},
-            json={
-                "chunk_number": 0,
-                "chunk_data": chunk_data,
-                "is_last": True
+    headers={"X-User-ID": user_id},
+    json={
+        "chunk_number": 0,
+        "chunk_data": chunk_data,
+        "is_last": True
             }
     )
     
     # Complete upload
     response = await client.post(
             f"/api/v1/analysis/upload/{upload_id}/complete",
-            headers={"X-User-ID": user_id}
+    headers={"X-User-ID": user_id}
     )
     
     assert response.status_code == 200
@@ -55,15 +55,15 @@ async def test_complete_upload_success(client):
 @pytest.mark.asyncio
 async def test_complete_upload_not_found(client):
     """Test completing non-existent upload"""
-            reg_response = await client.post(
-            "/api/v1/users/register",
-            json={"name": "Complete User 2", "email": "complete2@test.com"}
+    reg_response = await client.post(
+    "/api/v1/users/register",
+    json={"name": "Complete User 2", "email": "complete2@test.com"}
     )
     user_id = reg_response.json()["user_id"]
     
     response = await client.post(
-            "/api/v1/analysis/upload/invalid_upload_id/complete",
-            headers={"X-User-ID": user_id}
+    "/api/v1/analysis/upload/invalid_upload_id/complete",
+    headers={"X-User-ID": user_id}
     )
     
     assert response.status_code == 404

@@ -9,10 +9,10 @@ import pytest
 @pytest.mark.asyncio
 async def test_feedback_collection_flow(client):
     """Test complete feedback loop for continuous learning"""
-            # Setup: assume we have a call with analyzed segments
+    # Setup: assume we have a call with analyzed segments
     reg_response = await client.post(
-            "/api/v1/users/register",
-            json={"name": "Feedback User", "email": "feedback_flow@test.com"}
+    "/api/v1/users/register",
+    json={"name": "Feedback User", "email": "feedback_flow@test.com"}
     )
     user_id = reg_response.json()["user_id"]
     
@@ -22,28 +22,28 @@ async def test_feedback_collection_flow(client):
     
     # Step 1: Submit feedback correction
     feedback_response = await client.post(
-            f"/api/v1/calls/{call_id}/feedback",
-            headers={"X-User-ID": user_id},
-            json={
-                "segment_id": segment_id,
-                "corrected_enthusiasm": 8.0,
-                "corrected_agreement": 7.5,
-                "corrected_stress": 2.5
-            }
+    f"/api/v1/calls/{call_id}/feedback",
+    headers={"X-User-ID": user_id},
+    json={
+        "segment_id": segment_id,
+        "corrected_enthusiasm": 8.0,
+        "corrected_agreement": 7.5,
+        "corrected_stress": 2.5
+    }
     )
     
     # Should succeed or return 404 if call doesn't exist yet
     assert feedback_response.status_code in [200, 404]
     
     if feedback_response.status_code == 200:
-            data = feedback_response.json()
-            assert data["accepted"] is True
-            assert "total_feedback_count" in data
+        data = feedback_response.json()
+        assert data["accepted"] is True
+        assert "total_feedback_count" in data
             
     # Step 2: Check training status
     training_status_response = await client.get(
-            "/api/v1/analysis/training-status",
-            headers={"X-User-ID": user_id}
+    "/api/v1/analysis/training-status",
+    headers={"X-User-ID": user_id}
     )
     
     assert training_status_response.status_code == 200
@@ -56,9 +56,9 @@ async def test_feedback_collection_flow(client):
 @pytest.mark.asyncio
 async def test_multiple_feedback_submissions(client):
     """Test submitting multiple feedback corrections"""
-            reg_response = await client.post(
-            "/api/v1/users/register",
-            json={"name": "Multi Feedback", "email": "multi_feedback@test.com"}
+    reg_response = await client.post(
+    "/api/v1/users/register",
+    json={"name": "Multi Feedback", "email": "multi_feedback@test.com"}
     )
     user_id = reg_response.json()["user_id"]
     
@@ -66,13 +66,13 @@ async def test_multiple_feedback_submissions(client):
     
     # Submit multiple corrections
     for segment_id in range(1, 6):
-            response = await client.post(
-                f"/api/v1/calls/{call_id}/feedback",
-                headers={"X-User-ID": user_id},
-                json={
-                    "segment_id": segment_id,
-                    "corrected_enthusiasm": 7.0 + segment_id * 0.5
-                }
-            )
-            # Accept both 200 and 404
-            assert response.status_code in [200, 404]
+        response = await client.post(
+            f"/api/v1/calls/{call_id}/feedback",
+            headers={"X-User-ID": user_id},
+            json={
+                "segment_id": segment_id,
+                "corrected_enthusiasm": 7.0 + segment_id * 0.5
+            }
+        )
+        # Accept both 200 and 404
+        assert response.status_code in [200, 404]
