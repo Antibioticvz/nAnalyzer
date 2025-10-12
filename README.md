@@ -78,9 +78,9 @@ python scripts/download_models.py
 cd ../frontend
 npm install
 
-# Start the application
+# Start the application (includes FastAPI, React, and PostgreSQL)
 cd ..
-docker-compose up  # Or run backend and frontend separately
+docker-compose up  # Use --build the first time or after dependency changes
 ```
 
 ### Running Without Docker
@@ -190,7 +190,9 @@ ENABLE_PII_REDACTION=true
 REDACTION_PATTERNS=phone,ssn,credit_card
 
 # Storage Settings
-DATABASE_URL=sqlite:///./data/nanalyzer.db
+# Default to SQLite for local development; uncomment the Postgres URL when running via Docker
+DATABASE_URL=sqlite+aiosqlite:///./data/nanalyzer.db
+# DATABASE_URL=postgresql+asyncpg://nanalyzer:nanalyzer@localhost:5432/nanalyzer
 AUDIO_STORAGE_PATH=./data/audio
 BACKUP_ENABLED=false
 
@@ -284,6 +286,9 @@ docker compose exec backend pytest -v
 # Run specific test file
 docker compose exec backend pytest tests/test_api/test_users_login.py -v
 
+# Smoke-check the voice training pipeline (generates temp model files)
+docker compose exec backend pytest tests/test_api/test_users_train.py -v
+
 # Run frontend tests
 cd frontend && npm test -- --watchAll=false
 ```
@@ -297,8 +302,11 @@ docker compose exec backend bash
 # View API documentation
 open http://localhost:8000/docs
 
-# Check database content
-docker compose exec backend sqlite3 data/nanalyzer.db ".tables"
+# Inspect PostgreSQL tables
+docker compose exec postgres psql -U nanalyzer -d nanalyzer -c "\\dt"
+
+# (Optional) Inspect SQLite file when running without Docker/Postgres
+sqlite3 data/nanalyzer.db ".tables"
 ```
 
 ### Project Structure
@@ -351,6 +359,20 @@ npm test
 # Integration tests
 npm run test:integration
 ```
+
+### Voice Model Tooling
+
+Use the helper script to train and probe the speaker-identification model with your own recordings:
+
+```bash
+# Train with five or more WAV clips and preview predictions
+python scripts/voice_model_demo.py --train-dir data/uploads/my_user --evaluate data/test_clip.wav
+
+# Persist the model to a custom location
+python scripts/voice_model_demo.py --train clip1.wav clip2.wav clip3.wav clip4.wav clip5.wav --save-path models/voice/my_user.pkl
+```
+
+The script reuses the production pipeline (`train_user_voice_model` and `identify_speaker`) so you can validate recordings before hitting the API.
 
 ### Code Quality
 

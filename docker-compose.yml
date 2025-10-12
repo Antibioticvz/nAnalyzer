@@ -1,6 +1,22 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:15.6
+    environment:
+      POSTGRES_DB: nanalyzer
+      POSTGRES_USER: nanalyzer
+      POSTGRES_PASSWORD: nanalyzer
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "nanalyzer"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: ./backend
@@ -14,13 +30,16 @@ services:
     environment:
       - APP_ENV=development
       - DEBUG=true
-      - DATABASE_URL=sqlite+aiosqlite:///./data/nanalyzer.db
+      - DATABASE_URL=postgresql+asyncpg://nanalyzer:nanalyzer@postgres:5432/nanalyzer
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   frontend:
     build:
@@ -35,9 +54,10 @@ services:
       - REACT_APP_API_URL=http://localhost:8000
       - REACT_APP_WS_URL=ws://localhost:8000
     depends_on:
-      - backend
-    command: npm start
+      backend:
+        condition: service_started
 
 volumes:
   models:
   data:
+  postgres-data:

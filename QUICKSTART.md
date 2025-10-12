@@ -18,7 +18,7 @@ Get nAnalyzer up and running in 5 minutes!
 git clone https://github.com/yourusername/nAnalyzer.git
 cd nAnalyzer
 
-# 2. Start the application
+# 2. Start the application (backend + frontend + PostgreSQL)
 docker-compose up
 
 # That's it! Wait for containers to build and start
@@ -65,6 +65,7 @@ pip install -r requirements.txt
 
 # Setup environment
 cp .env.example .env
+# Tip: switch DATABASE_URL to the PostgreSQL DSN if you're running the Docker stack
 
 # Create directories
 mkdir -p ../data/audio ../models
@@ -90,6 +91,7 @@ npm start
 ### 1. Verify Installation
 
 Open your browser:
+
 - **Dashboard**: http://localhost:3000
 - **API Docs**: http://localhost:8000/docs
 - **Health Check**: http://localhost:8000/health
@@ -97,13 +99,22 @@ Open your browser:
 ### 2. Explore the Interface
 
 Navigate through the sidebar:
+
 - **Dashboard** - Overview and quick actions
 - **Live Monitoring** - Start/stop call recording
 - **Call History** - View past calls
 - **Analytics** - Aggregate insights
 - **Settings** - Configure models and privacy
 
-### 3. (Optional) Download ML Models
+### 3. Train your voice model
+
+1. Click **Voice Training** in the navigation (or **Retrain Voice Model** from Settings if you're already trained).
+2. Record each prompted phrase. You can add custom phrases, re-record, or discard clips at any time.
+3. After capturing at least five samples, submit to build the speaker identification model. The backend stores the calibrated model in `models/voice/`.
+
+For quick CLI experiments you can also run `python scripts/voice_model_demo.py --help`.
+
+### 4. (Optional) Download ML Models
 
 ```bash
 cd backend

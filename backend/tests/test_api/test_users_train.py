@@ -4,6 +4,10 @@ Contract test - must fail until endpoint is implemented
 """
 import pytest
 import base64
+import pickle
+from pathlib import Path
+
+from app.core.config import settings
 
 
 @pytest.fixture
@@ -43,8 +47,15 @@ def sample_audio_generator():
     return generate
 
 
+@pytest.fixture
+def temp_models_dir(tmp_path, monkeypatch):
+    models_dir = tmp_path / "models"
+    monkeypatch.setattr(settings, "MODELS_DIR", str(models_dir))
+    return models_dir
+
+
 @pytest.mark.asyncio
-async def test_train_voice_success(client, sample_audio_generator):
+async def test_train_voice_success(client, sample_audio_generator, temp_models_dir):
     """Test successful voice training with 8 samples"""
     # First create a user
     reg_response = await client.post(
@@ -78,6 +89,16 @@ async def test_train_voice_success(client, sample_audio_generator):
     assert "model_size_kb" in data
     assert "calibrated_threshold" in data
     assert isinstance(data["calibrated_threshold"], float)
+
+    model_path = Path(settings.MODELS_DIR) / "voice" / f"{user_id}.pkl"
+    assert model_path.exists(), "Expected trained model file to be created"
+
+    with model_path.open("rb") as model_file:
+        user_model = pickle.load(model_file)
+
+    assert "gmm" in user_model
+    assert "threshold" in user_model
+    assert user_model["n_samples"] == 8
 
 
 @pytest.mark.asyncio
