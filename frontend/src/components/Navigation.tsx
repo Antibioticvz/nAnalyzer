@@ -61,6 +61,22 @@ const Navigation: React.FC = () => {
                 ⚙️ Settings
               </Link>
             </li>
+            <li>
+              <Link
+                to={
+                  user
+                    ? `/voice-training/${user.user_id}`
+                    : "/voice-training/me"
+                }
+                className={`nav-link ${
+                  location.pathname.startsWith("/voice-training")
+                    ? "active"
+                    : ""
+                }`}
+              >
+                🎤 Voice Training
+              </Link>
+            </li>
             <li className="nav-user">
               <span className="nav-user-info">👤 {user?.name || "User"}</span>
               <Button

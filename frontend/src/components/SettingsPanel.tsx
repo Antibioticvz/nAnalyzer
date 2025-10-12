@@ -2,55 +2,63 @@
  * SettingsPanel component
  * User settings management interface
  */
-import React, { useState, useEffect } from 'react';
-import { UserResponse, UserSettingsUpdate } from '../types/api';
-import { usersAPI } from '../services/usersAPI';
+import React, { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { usersAPI } from "../services/usersAPI"
+import { UserResponse, UserSettingsUpdate } from "../types/api"
 
 interface SettingsPanelProps {
-  user: UserResponse;
-  onUpdate?: (settings: UserSettingsUpdate) => void;
+  user: UserResponse
+  onUpdate?: (settings: UserSettingsUpdate) => void
 }
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   user,
   onUpdate,
 }) => {
-  const [retentionDays, setRetentionDays] = useState(user.audio_retention_days);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const navigate = useNavigate()
+  const [retentionDays, setRetentionDays] = useState(user.audio_retention_days)
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [saveSuccess, setSaveSuccess] = useState(false)
 
   useEffect(() => {
-    setRetentionDays(user.audio_retention_days);
-  }, [user.audio_retention_days]);
+    setRetentionDays(user.audio_retention_days)
+  }, [user.audio_retention_days])
 
   const handleSave = async () => {
     if (retentionDays < 1 || retentionDays > 90) {
-      setSaveError('Retention period must be between 1 and 90 days');
-      return;
+      setSaveError("Retention period must be between 1 and 90 days")
+      return
     }
 
-    setIsSaving(true);
-    setSaveError(null);
-    setSaveSuccess(false);
+    setIsSaving(true)
+    setSaveError(null)
+    setSaveSuccess(false)
 
     try {
       await usersAPI.updateSettings(user.user_id, {
         audio_retention_days: retentionDays,
-      });
-      
-      setSaveSuccess(true);
-      onUpdate?.({ audio_retention_days: retentionDays });
-      
-      setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (error) {
-      setSaveError(error instanceof Error ? error.message : 'Failed to save settings');
-    } finally {
-      setIsSaving(false);
-    }
-  };
+      })
 
-  const hasChanges = retentionDays !== user.audio_retention_days;
+      setSaveSuccess(true)
+      onUpdate?.({ audio_retention_days: retentionDays })
+
+      setTimeout(() => setSaveSuccess(false), 3000)
+    } catch (error) {
+      setSaveError(
+        error instanceof Error ? error.message : "Failed to save settings"
+      )
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const hasChanges = retentionDays !== user.audio_retention_days
+
+  const handleRetrainVoice = () => {
+    navigate(`/voice-training/${user.user_id}`)
+  }
 
   return (
     <div className="settings-panel">
@@ -76,7 +84,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           <div className="info-row">
             <span className="info-label">Voice Trained:</span>
             <span className="info-value">
-              {user.voice_trained ? '✅ Yes' : '❌ No'}
+              {user.voice_trained ? "✅ Yes" : "❌ No"}
             </span>
           </div>
         </div>
@@ -89,9 +97,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         </p>
 
         <div className="setting-control">
-          <label htmlFor="retention-days">
-            Retention Period (days)
-          </label>
+          <label htmlFor="retention-days">Retention Period (days)</label>
           <div className="retention-input-group">
             <input
               id="retention-days"
@@ -99,7 +105,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               min="1"
               max="90"
               value={retentionDays}
-              onChange={(e) => setRetentionDays(parseInt(e.target.value) || 1)}
+              onChange={e => setRetentionDays(parseInt(e.target.value) || 1)}
               className="retention-input"
             />
             <span className="input-suffix">days</span>
@@ -107,6 +113,20 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           <p className="input-hint">
             Valid range: 1-90 days. Current: {user.audio_retention_days} days
           </p>
+        </div>
+      </div>
+
+      <div className="settings-section">
+        <h3>Voice Model</h3>
+        <p className="section-description">
+          Update your voice samples to improve speaker identification accuracy.
+        </p>
+        <div className="setting-control">
+          <button onClick={handleRetrainVoice} className="btn btn-primary">
+            {user.voice_trained
+              ? "Retrain Voice Model"
+              : "Start Voice Training"}
+          </button>
         </div>
       </div>
 
@@ -128,7 +148,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           disabled={!hasChanges || isSaving}
           className="btn btn-primary"
         >
-          {isSaving ? 'Saving...' : 'Save Changes'}
+          {isSaving ? "Saving..." : "Save Changes"}
         </button>
         {hasChanges && (
           <button
@@ -149,5 +169,5 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         </p>
       </div>
     </div>
-  );
-};
+  )
+}

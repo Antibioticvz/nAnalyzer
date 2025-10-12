@@ -101,7 +101,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     role?: string
   }) => {
     const response = await apiClient.post("/api/v1/users/register", userData)
-    return response.data.user_id
+    const createdUser = response.data
+
+    setUser(createdUser)
+    setUserIdState(createdUser.user_id)
+    apiClient.setUserId(createdUser.user_id)
+    localStorage.setItem("userId", createdUser.user_id)
+
+    return createdUser.user_id
   }
 
   const value: AuthContextType = {

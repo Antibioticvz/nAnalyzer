@@ -219,7 +219,17 @@ describe("AuthContext", () => {
   })
 
   it("should handle registration", async () => {
-    const mockResponse = { data: { user_id: "new-user-123" } }
+    const mockResponse = {
+      data: {
+        user_id: "new-user-123",
+        name: "Test",
+        email: "test@example.com",
+        role: "seller",
+        voice_trained: false,
+        created_at: "2025-01-01T00:00:00Z",
+        updated_at: "2025-01-01T00:00:00Z",
+      },
+    }
     ;(apiClient.post as jest.Mock).mockResolvedValue(mockResponse)
 
     render(
@@ -239,5 +249,14 @@ describe("AuthContext", () => {
         email: "test@example.com",
       })
     })
+
+    expect(apiClient.setUserId).toHaveBeenCalledWith("new-user-123")
+    expect(localStorageMock.setItem).toHaveBeenCalledWith(
+      "userId",
+      "new-user-123"
+    )
+
+    expect(await screen.findByTestId("user")).toHaveTextContent("Test")
+    expect(screen.getByTestId("userId")).toHaveTextContent("new-user-123")
   })
 })

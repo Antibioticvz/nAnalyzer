@@ -2,13 +2,14 @@
  * VoiceRecorder component
  * Records audio from microphone for voice training
  */
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from "react"
 
 interface VoiceRecorderProps {
-  phraseNumber: number;
-  phraseText: string;
-  onRecordingComplete: (audioBlob: Blob, duration: number) => void;
-  onCancel?: () => void;
+  phraseNumber: number
+  phraseText: string
+  onRecordingComplete: (audioBlob: Blob, duration: number) => void
+  onCancel?: () => void
+  disabled?: boolean
 }
 
 export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
@@ -16,88 +17,128 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   phraseText,
   onRecordingComplete,
   onCancel,
+  disabled = false,
 }) => {
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
-  const [audioURL, setAudioURL] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [isRecording, setIsRecording] = useState(false)
+  const [recordingTime, setRecordingTime] = useState(0)
+  const [recordedDuration, setRecordedDuration] = useState(0)
+  const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null)
+  const [audioURL, setAudioURL] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const startTimeRef = useRef<number>(0);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const chunksRef = useRef<Blob[]>([])
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const startTimeRef = useRef<number>(0)
 
   useEffect(() => {
     return () => {
       if (timerRef.current) {
-        clearInterval(timerRef.current);
+        clearInterval(timerRef.current)
       }
-    };
-  }, []);
+    }
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+      }
+      if (audioURL) {
+        URL.revokeObjectURL(audioURL)
+      }
+    }
+  }, [audioURL])
+
+  const resetState = () => {
+    setIsRecording(false)
+    setRecordingTime(0)
+    setRecordedDuration(0)
+    setRecordedBlob(null)
+    if (audioURL) {
+      URL.revokeObjectURL(audioURL)
+    }
+    setAudioURL(null)
+    setError(null)
+  }
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      chunksRef.current = [];
+      if (recordedBlob || audioURL) {
+        resetState()
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
 
-      mediaRecorder.ondataavailable = (event) => {
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
+      chunksRef.current = []
+
+      mediaRecorder.ondataavailable = event => {
         if (event.data.size > 0) {
-          chunksRef.current.push(event.data);
+          chunksRef.current.push(event.data)
         }
-      };
+      }
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
-        const url = URL.createObjectURL(blob);
-        setAudioURL(url);
-        
-        const duration = (Date.now() - startTimeRef.current) / 1000;
-        onRecordingComplete(blob, duration);
-        
-        stream.getTracks().forEach((track) => track.stop());
-      };
+        const blob = new Blob(chunksRef.current, { type: "audio/webm" })
+        const url = URL.createObjectURL(blob)
+        const duration = (Date.now() - startTimeRef.current) / 1000
 
-      startTimeRef.current = Date.now();
-      mediaRecorder.start();
-      setIsRecording(true);
-      setError(null);
+        setRecordedBlob(blob)
+        setRecordedDuration(duration)
+        setAudioURL(url)
+
+        stream.getTracks().forEach(track => track.stop())
+      }
+
+      startTimeRef.current = Date.now()
+      mediaRecorder.start()
+      setIsRecording(true)
+      setError(null)
 
       // Start timer
       timerRef.current = setInterval(() => {
-        setRecordingTime((Date.now() - startTimeRef.current) / 1000);
-      }, 100);
+        setRecordingTime((Date.now() - startTimeRef.current) / 1000)
+      }, 100)
     } catch (err) {
-      setError('Failed to access microphone. Please check permissions.');
-      console.error('Recording error:', err);
+      setError("Failed to access microphone. Please check permissions.")
+      console.error("Recording error:", err)
     }
-  };
+  }
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      
+      mediaRecorderRef.current.stop()
+      setIsRecording(false)
+
       if (timerRef.current) {
-        clearInterval(timerRef.current);
+        clearInterval(timerRef.current)
       }
     }
-  };
+  }
 
-  const resetRecording = () => {
-    setAudioURL(null);
-    setRecordingTime(0);
-    setError(null);
-  };
+  const handleAcceptRecording = () => {
+    if (recordedBlob) {
+      onRecordingComplete(recordedBlob, recordedDuration)
+      setError(null)
+    }
+  }
+
+  const handleDiscardRecording = () => {
+    resetState()
+    onCancel?.()
+  }
+
+  const handleReRecord = () => {
+    resetState()
+  }
 
   const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    const ms = Math.floor((seconds % 1) * 10);
-    return `${mins}:${secs.toString().padStart(2, '0')}.${ms}`;
-  };
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    const ms = Math.floor((seconds % 1) * 10)
+    return `${mins}:${secs.toString().padStart(2, "0")}.${ms}`
+  }
 
   return (
     <div className="voice-recorder">
@@ -123,6 +164,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
           <button
             onClick={startRecording}
             className="btn btn-primary btn-large"
+            disabled={disabled}
           >
             🎤 Start Recording
           </button>
@@ -130,9 +172,14 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 
         {isRecording && (
           <>
-            <div className="recording-indicator">
+            <div
+              className="recording-indicator"
+              data-testid="recording-indicator"
+            >
               <span className="recording-dot" />
-              <span className="recording-time">{formatTime(recordingTime)}</span>
+              <span className="recording-time" data-testid="recording-time">
+                {formatTime(recordingTime)}
+              </span>
             </div>
             <button
               onClick={stopRecording}
@@ -143,26 +190,34 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
           </>
         )}
 
-        {audioURL && (
-          <div className="recording-preview">
-            <audio src={audioURL} controls className="audio-player" />
+        {audioURL && recordedBlob && (
+          <div className="recording-preview" data-testid="recording-preview">
+            <audio
+              src={audioURL}
+              controls
+              className="audio-player"
+              data-testid="recording-audio"
+            />
             <div className="preview-actions">
-              <button
-                onClick={resetRecording}
-                className="btn btn-secondary"
-              >
+              <button onClick={handleReRecord} className="btn btn-secondary">
                 🔄 Re-record
               </button>
               <button
-                onClick={onCancel}
-                className="btn btn-secondary"
+                onClick={handleAcceptRecording}
+                className="btn btn-primary"
               >
                 ✓ Use This Recording
+              </button>
+              <button
+                onClick={handleDiscardRecording}
+                className="btn btn-tertiary"
+              >
+                ✖ Discard
               </button>
             </div>
           </div>
         )}
       </div>
     </div>
-  );
-};
+  )
+}
