@@ -218,12 +218,14 @@ WEBSOCKET_PING_INTERVAL=30
 #### Database Management
 
 **Reset Database (Docker):**
+
 ```bash
 # Reset database inside Docker container (drops all tables and recreates them)
 docker compose exec backend python scripts/init_db.py
 ```
 
 **Reset Database (Local):**
+
 ```bash
 # Reset database locally (when running without Docker)
 cd backend
@@ -232,6 +234,7 @@ python scripts/init_db.py
 ```
 
 **Database Status:**
+
 ```bash
 # Check migration status
 docker compose exec backend alembic current
@@ -243,6 +246,7 @@ docker compose exec backend alembic upgrade head
 #### Common Development Tasks
 
 **Full System Restart:**
+
 ```bash
 # Stop all containers
 docker compose down
@@ -252,6 +256,7 @@ docker compose up --build
 ```
 
 **Backend Development:**
+
 ```bash
 # Run backend with auto-reload
 docker compose exec backend uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
@@ -261,6 +266,7 @@ docker compose logs -f backend
 ```
 
 **Frontend Development:**
+
 ```bash
 # Run frontend with hot reload
 cd frontend && npm start
@@ -270,6 +276,7 @@ docker compose logs -f frontend
 ```
 
 **Testing:**
+
 ```bash
 # Run all backend tests
 docker compose exec backend pytest -v
@@ -282,6 +289,7 @@ cd frontend && npm test -- --watchAll=false
 ```
 
 **Debugging:**
+
 ```bash
 # Access backend container shell
 docker compose exec backend bash
