@@ -18,7 +18,7 @@ import {
   Tabs,
   Typography,
 } from "@mui/material"
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { VoiceRecorder } from "../components/VoiceRecorder"
 import { useAuth } from "../contexts/AuthContext"
 import { usersAPI } from "../services/usersAPI"
@@ -63,6 +63,7 @@ const VoiceVerification: React.FC = () => {
   const [result, setResult] = useState<VoiceVerificationResponse | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const isTrained = Boolean(user?.voice_trained)
 
@@ -111,7 +112,9 @@ const VoiceVerification: React.FC = () => {
     })
   }
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0]
     setResult(null)
     setError(null)
@@ -165,6 +168,9 @@ const VoiceVerification: React.FC = () => {
     }
     setSelectedFile(null)
     setFilePreview(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
   }
 
   const outcomeColor = result ? OUTCOME_COLORS[result.outcome] : undefined
@@ -181,8 +187,18 @@ const VoiceVerification: React.FC = () => {
         sx={{ mb: 3 }}
         aria-label="Verification input mode"
       >
-        <Tab value="record" icon={<GraphicEqIcon />} iconPosition="start" label="Record live" />
-        <Tab value="upload" icon={<CloudUploadIcon />} iconPosition="start" label="Upload file" />
+        <Tab
+          value="record"
+          icon={<GraphicEqIcon />}
+          iconPosition="start"
+          label="Record live"
+        />
+        <Tab
+          value="upload"
+          icon={<CloudUploadIcon />}
+          iconPosition="start"
+          label="Upload file"
+        />
       </Tabs>
     ),
     [mode]
@@ -196,15 +212,17 @@ const VoiceVerification: React.FC = () => {
             Test your voice model
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Record a fresh snippet or upload an existing call sample to see how confidently nAnalyzer
-            recognises your voice. Great for sanity-checking diarization before analysing important calls.
+            Record a fresh snippet or upload an existing call sample to see how
+            confidently nAnalyzer recognises your voice. Great for
+            sanity-checking diarization before analysing important calls.
           </Typography>
         </Box>
 
         {!isTrained && (
           <Alert severity="info">
-            Finish voice training to unlock live verification. Once trained, you can come back here to validate
-            new recordings and adjust thresholds if needed.
+            Finish voice training to unlock live verification. Once trained, you
+            can come back here to validate new recordings and adjust thresholds
+            if needed.
           </Alert>
         )}
 
@@ -221,33 +239,48 @@ const VoiceVerification: React.FC = () => {
           ) : (
             <Stack spacing={2}>
               <Typography variant="body1" color="text.secondary">
-                Choose a WAV or MP3 clip with your voice. We resample to 16kHz automatically and compare it
-                against your trained model.
+                Choose a WAV or MP3 clip with your voice. We resample to 16kHz
+                automatically and compare it against your trained model.
               </Typography>
               <Button
                 variant="contained"
-                component="label"
                 startIcon={<CloudUploadIcon />}
                 disabled={disableActions}
+                onClick={() => fileInputRef.current?.click()}
               >
                 Select audio file
-                <input
-                  type="file"
-                  hidden
-                  accept="audio/*"
-                  aria-label="Upload audio file"
-                  onChange={handleFileSelect}
-                />
               </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                hidden
+                accept="audio/*"
+                aria-label="Upload audio file"
+                onChange={handleFileSelect}
+                disabled={disableActions}
+              />
               {selectedFile && (
-                <Box sx={{ borderRadius: 2, border: "1px solid", borderColor: "divider", p: 2 }}>
+                <Box
+                  sx={{
+                    borderRadius: 2,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    p: 2,
+                  }}
+                >
                   <Stack spacing={1}>
-                    <Typography variant="subtitle1">{selectedFile.name}</Typography>
+                    <Typography variant="subtitle1">
+                      {selectedFile.name}
+                    </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
                     </Typography>
                     {filePreview && (
-                      <audio src={filePreview} controls style={{ width: "100%" }} />
+                      <audio
+                        src={filePreview}
+                        controls
+                        style={{ width: "100%" }}
+                      />
                     )}
                     <Stack direction="row" spacing={1}>
                       <Button
@@ -257,7 +290,11 @@ const VoiceVerification: React.FC = () => {
                       >
                         Run verification
                       </Button>
-                      <Button variant="outlined" onClick={handleClearFile} disabled={isSubmitting}>
+                      <Button
+                        variant="outlined"
+                        onClick={handleClearFile}
+                        disabled={isSubmitting}
+                      >
                         Clear
                       </Button>
                     </Stack>
@@ -280,7 +317,10 @@ const VoiceVerification: React.FC = () => {
         {error && <Alert severity="error">{error}</Alert>}
 
         {result && (
-          <Paper elevation={3} sx={{ p: 3, borderLeft: `4px solid`, borderColor: outcomeColor }}>
+          <Paper
+            elevation={3}
+            sx={{ p: 3, borderLeft: `4px solid`, borderColor: outcomeColor }}
+          >
             <Stack direction="row" spacing={2} alignItems="center">
               {outcomeIcon}
               <Box>
@@ -297,10 +337,10 @@ const VoiceVerification: React.FC = () => {
                       result.outcome === "match"
                         ? "success"
                         : result.outcome === "different_speaker"
-                        ? "error"
-                        : result.outcome === "uncertain"
-                        ? "warning"
-                        : "info"
+                          ? "error"
+                          : result.outcome === "uncertain"
+                            ? "warning"
+                            : "info"
                     }
                   />
                   <Chip

@@ -1,8 +1,8 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
-import VoiceVerification from "../VoiceVerification"
 import { useAuth } from "../../contexts/AuthContext"
 import { usersAPI } from "../../services/usersAPI"
 import { convertRecordingToBase64 } from "../../utils/audio"
+import VoiceVerification from "../VoiceVerification"
 
 type MockedAuth = ReturnType<typeof useAuth>
 
@@ -82,20 +82,34 @@ describe("VoiceVerification page", () => {
       ...baseAuthMock,
       user: { ...baseAuthMock.user!, voice_trained: false },
     })
-    mockedConvertRecordingToBase64.mockResolvedValue({ base64: "", duration: 0 })
+    mockedConvertRecordingToBase64.mockResolvedValue({
+      base64: "",
+      duration: 0,
+    })
 
     render(<VoiceVerification />)
 
     expect(
       screen.getByText(/Finish voice training to unlock live verification/i)
     ).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: /Mock Recorder/i })).toBeDisabled()
-    expect(screen.getByRole("button", { name: /Select audio file/i })).toBeDisabled()
+    expect(
+      screen.getByRole("button", { name: /Mock Recorder/i })
+    ).toBeDisabled()
+
+    // Switch to upload tab to check upload button
+    fireEvent.click(screen.getByRole("tab", { name: /Upload file/i }))
+
+    expect(
+      screen.getByRole("button", { name: /Select audio file/i })
+    ).toBeDisabled()
   })
 
   it("submits recorded audio and displays result", async () => {
     mockedUseAuth.mockReturnValue(baseAuthMock)
-    mockedConvertRecordingToBase64.mockResolvedValue({ base64: "abc", duration: 1.1 })
+    mockedConvertRecordingToBase64.mockResolvedValue({
+      base64: "abc",
+      duration: 1.1,
+    })
     mockedVerifyVoice.mockResolvedValue({
       outcome: "match",
       confidence: 0.92,
@@ -124,7 +138,10 @@ describe("VoiceVerification page", () => {
 
   it("uploads file and triggers verification", async () => {
     mockedUseAuth.mockReturnValue(baseAuthMock)
-    mockedConvertRecordingToBase64.mockResolvedValue({ base64: "file-base64", duration: 2 })
+    mockedConvertRecordingToBase64.mockResolvedValue({
+      base64: "file-base64",
+      duration: 2,
+    })
     mockedVerifyVoice.mockResolvedValue({
       outcome: "different_speaker",
       confidence: 0.2,
@@ -135,11 +152,13 @@ describe("VoiceVerification page", () => {
       recommendations: ["Check login", "Retrain model"],
     })
 
-  render(<VoiceVerification />)
+    render(<VoiceVerification />)
 
     fireEvent.click(screen.getByRole("tab", { name: /Upload file/i }))
 
-  const fileInput = screen.getByLabelText(/Upload audio file/i) as HTMLInputElement
+    const fileInput = screen.getByLabelText(
+      /Upload audio file/i
+    ) as HTMLInputElement
     const file = new File(["hello"], "call.wav", { type: "audio/wav" })
     fireEvent.change(fileInput, { target: { files: [file] } })
 
@@ -152,7 +171,9 @@ describe("VoiceVerification page", () => {
       source: "upload",
       filename: "call.wav",
     })
-    expect(await screen.findByText(/Different voice detected/)).toBeInTheDocument()
+    expect(
+      await screen.findByText(/Different voice detected/)
+    ).toBeInTheDocument()
     expect(screen.getByText(/Check login/)).toBeInTheDocument()
   })
 })
