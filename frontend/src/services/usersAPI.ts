@@ -8,6 +8,8 @@ import {
   UserResponse,
   VoiceTrainingRequest,
   VoiceTrainingResponse,
+  VoiceVerificationRequest,
+  VoiceVerificationResponse,
   UserSettingsUpdate,
   UserSettingsResponse,
 } from '../types/api';
@@ -34,6 +36,20 @@ export const usersAPI = {
   ): Promise<VoiceTrainingResponse> => {
     const response = await api.post<VoiceTrainingResponse>(
       `/api/v1/users/${userId}/train-voice`,
+      data
+    );
+    return response.data;
+  },
+
+  /**
+   * Verify audio clip against user's trained voice model
+   */
+  verifyVoice: async (
+    userId: string,
+    data: VoiceVerificationRequest
+  ): Promise<VoiceVerificationResponse> => {
+    const response = await api.post<VoiceVerificationResponse>(
+      `/api/v1/users/${userId}/verify-voice`,
       data
     );
     return response.data;

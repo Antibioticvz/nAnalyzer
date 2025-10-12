@@ -3,7 +3,7 @@ Pydantic schemas for User API
 Request and response models
 """
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
-from typing import Optional
+from typing import Literal, Optional
 from datetime import datetime
 
 
@@ -65,6 +65,29 @@ class VoiceTrainingResponse(BaseModel):
     model_accuracy: float
     model_size_kb: int
     calibrated_threshold: float
+
+
+class VoiceVerificationRequest(BaseModel):
+    audio_base64: str
+    source: Literal["recording", "upload"] = "recording"
+    duration: Optional[float] = Field(default=None, gt=0)
+    filename: Optional[str] = Field(default=None, max_length=255)
+
+
+class VoiceVerificationResponse(BaseModel):
+    outcome: Literal[
+        "match",
+        "uncertain",
+        "different_speaker",
+        "audio_issue",
+        "model_not_ready",
+    ]
+    confidence: float = Field(ge=0, le=1)
+    score: Optional[float] = None
+    threshold: Optional[float] = None
+    message: str
+    details: str
+    recommendations: list[str]
 
 
 class UserSettingsUpdate(BaseModel):

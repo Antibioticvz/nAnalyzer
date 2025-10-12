@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import uuid
-from datetime import datetime, timedelta
 
 from app.core.database import get_db
 from app.models.user import User
@@ -17,13 +16,21 @@ from app.schemas.user import (
     UserLoginResponse,
     VoiceTrainingRequest,
     VoiceTrainingResponse,
+    VoiceVerificationRequest,
+    VoiceVerificationResponse,
     UserSettingsUpdate,
-    UserSettingsResponse
+    UserSettingsResponse,
 )
-from app.ml.speaker_id import train_user_voice_model, save_model
+from app.ml.speaker_id import (
+    train_user_voice_model,
+    save_model,
+    load_model,
+    extract_features_from_audio_bytes,
+)
 from app.core.config import settings
 import base64
 import os
+from typing import Tuple
 
 router = APIRouter(tags=["users"])
 
@@ -238,4 +245,194 @@ async def update_settings(
         user_id=user_id,
         audio_retention_days=user.audio_retention_days,
         updated_at=user.updated_at
+    )
+
+
+def _classify_margin(margin: float) -> Tuple[str, float]:
+    """Map score/threshold margin to outcome label and confidence."""
+    if margin >= 8:
+        return "match", min(0.99, 0.75 + (margin / 40))
+    if margin >= 0:
+        return "match", 0.65 + (margin / 40)
+    if margin > -5:
+        return "uncertain", max(0.35, 0.5 + (margin / 20))
+    return "different_speaker", max(0.05, 0.15 + (margin / 20))
+
+
+def _build_response_metadata(outcome: str) -> Tuple[str, list[str]]:
+    if outcome == "match":
+        return (
+            "✅ It's you!",
+            [
+                "Speaker diarization will confidently attribute segments to you.",
+                "Save this clip for a future regression test if needed.",
+            ],
+        )
+    if outcome == "uncertain":
+        return (
+            "🤔 Borderline match",
+            [
+                "Try recording again with less background noise.",
+                "Consider retraining your voice model with a few fresh samples.",
+            ],
+        )
+    if outcome == "different_speaker":
+        return (
+            "⚠️ Voice does not match",
+            [
+                "Verify the correct user is logged in before analysis.",
+                "Retrain your model if your voice has changed significantly.",
+            ],
+        )
+    if outcome == "audio_issue":
+        return (
+            "🎧 We couldn't analyze the clip",
+            [
+                "Record at least three seconds of clear speech.",
+                "Avoid uploading encrypted or unsupported audio formats.",
+            ],
+        )
+    return (
+        "ℹ️ Voice model not ready",
+        [
+            "Complete the voice training workflow to generate a personal model.",
+            "Once trained, you can return here to validate new audio snippets.",
+        ],
+    )
+
+
+@router.post("/{user_id}/verify-voice", response_model=VoiceVerificationResponse)
+async def verify_voice(
+    user_id: str,
+    request: VoiceVerificationRequest,
+    x_user_id: str = Header(..., alias="X-User-ID"),
+    db: AsyncSession = Depends(get_db)
+):
+    """Verify whether an audio clip matches the user's trained voice model."""
+    stmt = select(User).where(User.id == user_id)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not user.voice_trained or not user.model_path:
+        message, recommendations = _build_response_metadata("model_not_ready")
+        return VoiceVerificationResponse(
+            outcome="model_not_ready",
+            confidence=0.0,
+            score=None,
+            threshold=None,
+            message=message,
+            details="Voice model not trained for this user.",
+            recommendations=recommendations,
+        )
+
+    if request.duration is not None and request.duration < 1.0:
+        message, recommendations = _build_response_metadata("audio_issue")
+        return VoiceVerificationResponse(
+            outcome="audio_issue",
+            confidence=0.0,
+            score=None,
+            threshold=user.gmm_threshold,
+            message=message,
+            details="Recording is too short. Provide at least one second of speech.",
+            recommendations=recommendations,
+        )
+
+    try:
+        audio_bytes = base64.b64decode(request.audio_base64)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "InvalidAudio",
+                "message": f"Audio payload must be base64-encoded WAV: {exc}",
+            },
+        ) from exc
+
+    if not audio_bytes:
+        message, recommendations = _build_response_metadata("audio_issue")
+        return VoiceVerificationResponse(
+            outcome="audio_issue",
+            confidence=0.0,
+            score=None,
+            threshold=user.gmm_threshold,
+            message=message,
+            details="Empty audio payload received.",
+            recommendations=recommendations,
+        )
+
+    try:
+        user_model = load_model(user.model_path)
+    except FileNotFoundError:
+        message, recommendations = _build_response_metadata("model_not_ready")
+        return VoiceVerificationResponse(
+            outcome="model_not_ready",
+            confidence=0.0,
+            score=None,
+            threshold=None,
+            message=message,
+            details="Trained model file could not be found.",
+            recommendations=recommendations,
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "ModelLoadError",
+                "message": f"Failed to load trained voice model: {exc}",
+            },
+        ) from exc
+
+    try:
+        features = extract_features_from_audio_bytes(
+            audio_bytes,
+            target_sample_rate=settings.SAMPLE_RATE,
+        )
+    except ValueError as exc:
+        message, recommendations = _build_response_metadata("audio_issue")
+        return VoiceVerificationResponse(
+            outcome="audio_issue",
+            confidence=0.0,
+            score=None,
+            threshold=user.gmm_threshold,
+            message=message,
+            details=str(exc),
+            recommendations=recommendations,
+        )
+
+    gmm = user_model.get("gmm")
+    threshold = user_model.get("threshold", user.gmm_threshold)
+
+    if gmm is None or threshold is None:
+        message, recommendations = _build_response_metadata("model_not_ready")
+        return VoiceVerificationResponse(
+            outcome="model_not_ready",
+            confidence=0.0,
+            score=None,
+            threshold=None,
+            message=message,
+            details="Voice model is missing calibration data.",
+            recommendations=recommendations,
+        )
+
+    score = gmm.score(features)
+    margin = score - float(threshold)
+    outcome, confidence = _classify_margin(margin)
+    message, recommendations = _build_response_metadata(outcome)
+
+    details = (
+        f"Log-likelihood score {score:.2f} vs threshold {float(threshold):.2f}. "
+        f"Margin {margin:.2f}."
+    )
+
+    return VoiceVerificationResponse(
+        outcome=outcome,
+        confidence=round(confidence, 3),
+        score=float(score),
+        threshold=float(threshold),
+        message=message,
+        details=details,
+        recommendations=recommendations,
     )

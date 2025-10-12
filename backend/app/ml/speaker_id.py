@@ -2,11 +2,13 @@
 GMM-based speaker identification module
 Per spec: scikit-learn GMM with per-user threshold calibration
 """
+import io
 import numpy as np
 import pickle
 from pathlib import Path
 from sklearn.mixture import GaussianMixture
 from typing import List, Dict, Any
+from scipy.io import wavfile
 from app.ml.audio_processing import extract_mfcc
 
 
@@ -161,9 +163,6 @@ def train_user_voice_model(
     Returns:
         Complete user model dictionary
     """
-    import io
-    from scipy.io import wavfile
-    
     # Extract MFCC features from all samples
     mfcc_features = []
     
@@ -199,3 +198,47 @@ def train_user_voice_model(
     }
     
     return user_model
+
+
+def extract_features_from_audio_bytes(
+    audio_bytes: bytes,
+    target_sample_rate: int = 16000
+) -> np.ndarray:
+    """Convert raw WAV bytes into MFCC feature matrix for inference."""
+    buffer = io.BytesIO(audio_bytes)
+    try:
+        sr, audio = wavfile.read(buffer)
+    except Exception as exc:  # pragma: no cover - bubbling up as ValueError
+        raise ValueError(f"Unable to decode audio data: {exc}") from exc
+
+    if audio.size == 0:
+        raise ValueError("Audio sample is empty")
+
+    if audio.ndim > 1:
+        audio = np.mean(audio, axis=1)
+
+    if audio.dtype == np.int16:
+        audio = audio.astype(np.float32) / 32768.0
+    elif audio.dtype == np.int32:
+        audio = audio.astype(np.float32) / 2147483648.0
+    else:
+        audio = audio.astype(np.float32)
+
+    if sr != target_sample_rate:
+        try:
+            import librosa
+
+            audio = librosa.resample(audio, orig_sr=sr, target_sr=target_sample_rate)
+            sr = target_sample_rate
+        except Exception as exc:  # pragma: no cover - resample failure handled as ValueError
+            raise ValueError(f"Failed to resample audio: {exc}") from exc
+
+    max_amplitude = np.max(np.abs(audio))
+    if max_amplitude > 0:
+        audio = audio / max_amplitude
+
+    mfcc = extract_mfcc(audio, sr)
+    if mfcc.shape[1] < 5:
+        raise ValueError("Audio sample too short for reliable verification")
+
+    return mfcc.T

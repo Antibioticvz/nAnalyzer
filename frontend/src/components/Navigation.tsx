@@ -63,6 +63,16 @@ const Navigation: React.FC = () => {
             </li>
             <li>
               <Link
+                to="/voice-verification"
+                className={`nav-link ${
+                  isActive("/voice-verification") ? "active" : ""
+                }`}
+              >
+                🧪 Test My Model
+              </Link>
+            </li>
+            <li>
+              <Link
                 to={
                   user
                     ? `/voice-training/${user.user_id}`

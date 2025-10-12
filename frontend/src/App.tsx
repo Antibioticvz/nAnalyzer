@@ -11,6 +11,7 @@ import Login from "./pages/Login"
 import Register from "./pages/Register"
 import Settings from "./pages/Settings"
 import VoiceTraining from "./pages/VoiceTraining"
+import VoiceVerification from "./pages/VoiceVerification"
 
 // Layout components
 import Navigation from "./components/Navigation"
@@ -71,6 +72,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/voice-verification"
+              element={
+                <ProtectedRoute>
+                  <VoiceVerification />
                 </ProtectedRoute>
               }
             />

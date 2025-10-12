@@ -43,6 +43,30 @@ export interface VoiceTrainingResponse {
   calibrated_threshold: number;
 }
 
+export type VoiceVerificationOutcome =
+  | 'match'
+  | 'uncertain'
+  | 'different_speaker'
+  | 'audio_issue'
+  | 'model_not_ready';
+
+export interface VoiceVerificationRequest {
+  audio_base64: string;
+  source?: 'recording' | 'upload';
+  duration?: number;
+  filename?: string;
+}
+
+export interface VoiceVerificationResponse {
+  outcome: VoiceVerificationOutcome;
+  confidence: number;
+  score: number | null;
+  threshold: number | null;
+  message: string;
+  details: string;
+  recommendations: string[];
+}
+
 export interface UserSettingsUpdate {
   audio_retention_days: number;
 }
