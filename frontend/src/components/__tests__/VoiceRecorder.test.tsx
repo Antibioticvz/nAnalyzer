@@ -198,6 +198,66 @@ describe("VoiceRecorder Component", () => {
     expect(onComplete.mock.calls[0][0]).toBeInstanceOf(Blob)
   })
 
+  test("resets preview after accepting recording", async () => {
+    const onComplete = jest.fn()
+    const user = userEvent.setup()
+
+    render(
+      <VoiceRecorder
+        phraseNumber={1}
+        phraseText="Test phrase"
+        onRecordingComplete={onComplete}
+      />
+    )
+
+    await user.click(screen.getByText(/Start Recording/i))
+    await screen.findByText(/Stop Recording/i)
+    await user.click(screen.getByText(/Stop Recording/i))
+    const preview = await screen.findByTestId("recording-preview")
+
+    await user.click(
+      within(preview).getByRole("button", { name: /Use This Recording/i })
+    )
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("recording-preview")).not.toBeInTheDocument()
+    })
+
+    expect(screen.getByText(/Start Recording/i)).toBeInTheDocument()
+  })
+
+  test("clears state when phrase changes", async () => {
+    const onComplete = jest.fn()
+    const user = userEvent.setup()
+
+    const { rerender } = render(
+      <VoiceRecorder
+        phraseNumber={1}
+        phraseText="First phrase"
+        onRecordingComplete={onComplete}
+      />
+    )
+
+    await user.click(screen.getByText(/Start Recording/i))
+    await screen.findByText(/Stop Recording/i)
+    await user.click(screen.getByText(/Stop Recording/i))
+    expect(await screen.findByTestId("recording-preview")).toBeInTheDocument()
+
+    rerender(
+      <VoiceRecorder
+        phraseNumber={2}
+        phraseText="Second phrase"
+        onRecordingComplete={onComplete}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("recording-preview")).not.toBeInTheDocument()
+    })
+
+    expect(screen.getByText(/Start Recording/i)).toBeInTheDocument()
+  })
+
   test("handles microphone access error", async () => {
     mockGetUserMedia.mockRejectedValueOnce(new Error("Permission denied"))
     const user = userEvent.setup()

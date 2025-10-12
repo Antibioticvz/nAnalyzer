@@ -2,7 +2,7 @@
  * VoiceRecorder component
  * Records audio from microphone for voice training
  */
-import React, { useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 
 interface VoiceRecorderProps {
   phraseNumber: number
@@ -50,7 +50,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     }
   }, [audioURL])
 
-  const resetState = () => {
+  const resetState = useCallback(() => {
     setIsRecording(false)
     setRecordingTime(0)
     setRecordedDuration(0)
@@ -60,7 +60,17 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     }
     setAudioURL(null)
     setError(null)
-  }
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+      timerRef.current = null
+    }
+  }, [audioURL])
+
+  useEffect(() => {
+    resetState()
+    // resetState intentionally omitted from deps to avoid re-triggering on internal state updates
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phraseNumber, phraseText])
 
   const startRecording = async () => {
     try {
@@ -121,6 +131,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     if (recordedBlob) {
       onRecordingComplete(recordedBlob, recordedDuration)
       setError(null)
+      resetState()
     }
   }
 
