@@ -35,13 +35,10 @@ class MockMediaRecorder {
 
 // Mock navigator.mediaDevices
 const mockGetUserMedia = jest.fn()
-const mockTrack = { stop: jest.fn() }
-const mockStream = {
-  getTracks: () => [mockTrack],
-}
 
 global.MediaRecorder = MockMediaRecorder as any
 global.URL.createObjectURL = jest.fn(() => "blob:mock-url")
+global.URL.revokeObjectURL = jest.fn()
 
 Object.defineProperty(global.navigator, "mediaDevices", {
   value: {
@@ -51,9 +48,18 @@ Object.defineProperty(global.navigator, "mediaDevices", {
 })
 
 describe("VoiceRecorder Component", () => {
+  let mockTrack: { stop: jest.Mock }
+
   beforeEach(() => {
     jest.clearAllMocks()
-    mockGetUserMedia.mockResolvedValue(mockStream)
+    mockTrack = { stop: jest.fn() }
+    mockGetUserMedia.mockImplementation(() =>
+      Promise.resolve({
+        getTracks: () => [mockTrack],
+      })
+    )
+    ;(global.URL.createObjectURL as jest.Mock).mockReturnValue("blob:mock-url")
+    ;(global.URL.revokeObjectURL as jest.Mock).mockImplementation(() => {})
   })
 
   test("renders phrase and recording button", () => {
